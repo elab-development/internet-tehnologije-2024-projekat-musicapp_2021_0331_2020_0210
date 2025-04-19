@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Reservation;
 use App\Models\User;
 use App\Models\Event;
+use App\Models\Seat;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ReservationFactory extends Factory

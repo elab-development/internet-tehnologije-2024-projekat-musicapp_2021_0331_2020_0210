@@ -1,32 +1,52 @@
 <?php
-// database/migrations/2025_04_19_000002_add_foreign_key_constraints.php
+// database/migrations/2025_04_19_171946_add_foreign_keys_within_tables.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddForeignKeyConstraints extends Migration
+class AddForeignKeysWithinTables extends Migration
 {
     public function up()
     {
         Schema::table('events', function (Blueprint $table) {
-            $table->foreign('venue_id')->references('id')->on('venues')->cascadeOnDelete();
-            $table->foreign('manager_id')->references('id')->on('users')->cascadeOnDelete();
-            $table->foreign('author_id')->references('id')->on('authors')->cascadeOnDelete();
+            $table->foreign('venue_id')
+                  ->references('id')->on('venues')
+                  ->cascadeOnDelete();
+
+            $table->foreign('manager_id')
+                  ->references('id')->on('users')
+                  ->cascadeOnDelete();
+
+            $table->foreign('author_id')
+                  ->references('id')->on('authors')
+                  ->cascadeOnDelete();
         });
 
         Schema::table('seats', function (Blueprint $table) {
-            $table->foreign('event_id')->references('id')->on('events')->cascadeOnDelete();
+            $table->foreign('event_id')
+                  ->references('id')->on('events')
+                  ->cascadeOnDelete();
         });
 
         Schema::table('reservations', function (Blueprint $table) {
-            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
-            $table->foreign('event_id')->references('id')->on('events')->cascadeOnDelete();
+            $table->foreign('user_id')
+                  ->references('id')->on('users')
+                  ->cascadeOnDelete();
+
+            $table->foreign('event_id')
+                  ->references('id')->on('events')
+                  ->cascadeOnDelete();
         });
 
         Schema::table('reservation_seat', function (Blueprint $table) {
-            $table->foreign('reservation_id')->references('id')->on('reservations')->cascadeOnDelete();
-            $table->foreign('seat_id')->references('id')->on('seats')->cascadeOnDelete();
+            $table->foreign('reservation_id')
+                  ->references('id')->on('reservations')
+                  ->cascadeOnDelete();
+
+            $table->foreign('seat_id')
+                  ->references('id')->on('seats')
+                  ->cascadeOnDelete();
         });
     }
 

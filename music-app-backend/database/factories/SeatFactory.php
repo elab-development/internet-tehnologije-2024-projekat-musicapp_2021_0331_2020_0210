@@ -1,25 +1,43 @@
 <?php
+// database/seeders/SeatsSeeder.php
 
-namespace Database\Factories;
+namespace Database\Seeders;
 
+use Illuminate\Database\Seeder;
 use App\Models\Seat;
 use App\Models\Event;
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 
-class SeatFactory extends Factory
+class SeatsSeeder extends Seeder
 {
-    protected $model = Seat::class;
-
-    public function definition()
+    public function run()
     {
-        // e.g. "A12", "B7", "K30"
-        $row    = chr($this->faker->numberBetween(65, 75)); // ASCII 65–75 = A–K
-        $number = $this->faker->numberBetween(1, 30);
+        foreach (Event::all() as $event) {
+            // 1) build the full pool A1…A30, B1…B30 … K1…K30
+            $positions = [];
+            foreach (range('A', 'K') as $row) {
+                foreach (range(1, 30) as $num) {
+                    $positions[] = $row . $num;
+                }
+            }
 
-        return [
-            'number_of_seats' => 1,
-            'position'        => $row.$number,
-            'event_id'        => Event::factory(),
-        ];
+            // 2) shuffle + take exactly 50 unique
+            shuffle($positions);
+            $selected = array_slice($positions, 0, 50);
+
+            // 3) prepare a Sequence of state‑arrays for the factory
+            $states = array_map(function ($pos) use ($event) {
+                return [
+                    'position' => $pos,
+                    'event_id' => $event->id,
+                ];
+            }, $selected);
+
+            // 4) fire off the factory with the Sequence
+            Seat::factory()
+                ->count(count($states))
+                ->state(new Sequence(...$states))
+                ->create();
+        }
     }
 }

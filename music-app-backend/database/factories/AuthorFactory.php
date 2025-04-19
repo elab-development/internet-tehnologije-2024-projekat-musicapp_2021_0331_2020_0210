@@ -48,7 +48,7 @@ class AuthorFactory extends Factory
         ];
         
 
-        $name = $this->faker->randomElement($artists);
+        $name = $this->faker->unique()->randomElement($artists);
 
         // Query Wikipedia for a thumbnail image
         $client = new Client([

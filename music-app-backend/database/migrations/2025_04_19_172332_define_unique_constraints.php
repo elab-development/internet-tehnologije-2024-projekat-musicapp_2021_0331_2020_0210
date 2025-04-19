@@ -5,14 +5,10 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddUniqueConstraints extends Migration
+class DefineUniqueConstraints extends Migration
 {
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->unique('email');
-        });
-
         Schema::table('venues', function (Blueprint $table) {
             $table->unique(['name', 'city', 'address']);
         });
@@ -29,9 +25,6 @@ class AddUniqueConstraints extends Migration
 
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropUnique(['users_email_unique']);
-        });
 
         Schema::table('venues', function (Blueprint $table) {
             $table->dropUnique(['venues_name_city_address_unique']);
