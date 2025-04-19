@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.2",
         "doctrine/dbal": "^4.2",
+        "guzzlehttp/guzzle": "^7.9",
         "laravel/framework": "*"
     },
     "require-dev": {

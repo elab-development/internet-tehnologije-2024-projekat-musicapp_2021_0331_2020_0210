@@ -1,44 +1,61 @@
 <?php
+// database/factories/UserFactory.php
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use GuzzleHttp\Client;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
- */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
-    protected static ?string $password;
+    protected $model = User::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
-    public function definition(): array
+    public function definition()
     {
+        // 1) Pick a gender and build a matching name
+        $gender    = $this->faker->randomElement(['male','female']);
+        $firstName = $gender === 'male'
+            ? $this->faker->firstNameMale()
+            : $this->faker->firstNameFemale();
+        $lastName  = $this->faker->lastName();
+        $name      = "{$firstName} {$lastName}";
+
+        // 2) Fallback static portrait in case API fails
+        $seedIndex  = $this->faker->numberBetween(0, 99);
+        $fallback   = "https://randomuser.me/api/portraits/"
+                    . ($gender==='male' ? 'men' : 'women')
+                    . "/{$seedIndex}.jpg";
+
+        // 3) Try fetching a fresh one from RandomUser.me
+        $imageUrl = $fallback;
+        try {
+            $client = new Client(['timeout' => 2.0]);
+            $res = $client->get('https://randomuser.me/api/', [
+                'query' => [
+                    'inc'    => 'picture',
+                    'gender' => $gender,
+                    'noinfo' => true,
+                ],
+            ]);
+            $data = json_decode($res->getBody(), true);
+            if (!empty($data['results'][0]['picture']['large'])) {
+                $imageUrl = $data['results'][0]['picture']['large'];
+            }
+        } catch (\Exception $e) {
+            // network failed, stick with fallback
+        }
+
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
+            'name'            => $name,
+            'email'           => $this->faker->unique()->safeEmail(),
+            'password'        => bcrypt('password'),
+            'role'            => $this->faker->randomElement(['event_manager','buyer','administrator']),
+            'address'         => $this->faker->address(),
+            'phone'           => $this->faker->phoneNumber(),
+            'image_url'       => $imageUrl,
+            'remember_token'  => Str::random(10),
         ];
-    }
-
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
-    public function unverified(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
-        ]);
     }
 }
