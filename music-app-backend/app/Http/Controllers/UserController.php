@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -18,19 +19,17 @@ class UserController extends Controller
      * Return a collection of all buyer users.
      * Only administrators may call this.
      */
-    public function index(Request $request)
+    public function index()
     {
-        // Check that the authenticated user is an administrator
-        if ($request->user()->role !== 'administrator') {
+        $user = Auth::user();
+        if ($user->role !== 'administrator') {
             return response()->json([
                 'message' => 'Forbidden: administrators only.'
             ], 403);
         }
 
-        // Fetch all users with the 'buyer' role
         $buyers = User::where('role', 'buyer')->get();
 
-        // Return them as a resource collection
         return UserResource::collection($buyers);
     }
 }
