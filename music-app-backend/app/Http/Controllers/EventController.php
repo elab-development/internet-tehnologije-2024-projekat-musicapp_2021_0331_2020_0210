@@ -96,7 +96,7 @@ class EventController extends Controller
     }
 
     /**
-     * PUT/PATCH /events/{event}
+     * PUT /events/{event}
      * Only event managers on their own events
      */
     public function update(Request $request, Event $event)
