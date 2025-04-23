@@ -9,12 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
-    public function __construct()
-    {
-        // Ensure only authenticated users can access these endpoints
-        $this->middleware('auth:sanctum');
-    }
-
     /**
      * Return a collection of all buyer users.
      * Only administrators may call this.

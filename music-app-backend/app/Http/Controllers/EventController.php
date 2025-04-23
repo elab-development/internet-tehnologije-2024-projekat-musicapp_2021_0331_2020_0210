@@ -9,12 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 class EventController extends Controller
 {
-    public function __construct()
-    {
-        // Protect all routes with Sanctum
-        $this->middleware('auth:sanctum');
-    }
-
     /**
      * GET /events
      * Everyone except administrators
@@ -34,14 +28,17 @@ class EventController extends Controller
      * GET /events/{event}
      * Everyone except administrators
      */
-    public function show(Event $event)
+    public function show($id)
     {
         $user = Auth::user();
         if ($user->role === 'administrator') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
-
-        $event->load(['venue', 'manager', 'author', 'seats', 'attendees']);
+    
+        // Manually fetch or 404
+        $event = Event::with(['venue','manager','author','seats','attendees'])
+                      ->findOrFail($id);
+    
         return new EventResource($event);
     }
 
@@ -96,16 +93,22 @@ class EventController extends Controller
     }
 
     /**
-     * PUT /events/{event}
+     * PUT /events/{id}
      * Only event managers on their own events
      */
-    public function update(Request $request, Event $event)
+    public function update(Request $request, $id)
     {
         $user = Auth::user();
+
+        // Manually resolve or 404
+        $event = Event::findOrFail($id);
+
+        // Authorization check
         if ($user->role !== 'event_manager' || $event->manager_id !== $user->id) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        // Validate only the fields that may appear
         $data = $request->validate([
             'title'            => 'sometimes|string|max:500',
             'description'      => 'sometimes|string',
@@ -117,6 +120,7 @@ class EventController extends Controller
             'tickets_capacity' => 'sometimes|integer|min:0',
         ]);
 
+        // Apply update and reload relationships
         $event->update($data);
         $event->load(['venue', 'manager', 'author', 'seats', 'attendees']);
 
@@ -124,17 +128,26 @@ class EventController extends Controller
     }
 
     /**
-     * DELETE /events/{event}
+     * DELETE /events/{id}
      * Only event managers on their own events
      */
-    public function delete(Event $event)
+    public function delete(Request $request, $id)
     {
         $user = Auth::user();
+    
+        // Manually resolve or 404
+        $event = Event::findOrFail($id);
+    
+        // Authorization check
         if ($user->role !== 'event_manager' || $event->manager_id !== $user->id) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
-
+    
+        // Delete and return a success message
         $event->delete();
-        return response()->json(null, 204);
+    
+        return response()->json([
+            'message' => 'Event deleted successfully!'
+        ], 200);
     }
 }

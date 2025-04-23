@@ -9,12 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 class ReservationController extends Controller
 {
-    public function __construct()
-    {
-        // Protect all routes with Sanctum
-        $this->middleware('auth:sanctum');
-    }
-
     /**
      * GET /reservations/events
      * Show all reservations for events managed by the authenticated manager.
@@ -80,12 +74,17 @@ class ReservationController extends Controller
     }
 
     /**
-     * PATCH /reservations/{reservation}/status
+     * PATCH /reservations/{id}/status
      * Update the status of a reservation (manager only).
      */
-    public function updateStatus(Request $request, Reservation $reservation)
+    public function updateStatus(Request $request, $id)
     {
         $user = Auth::user();
+
+        // Manually resolve or 404
+        $reservation = Reservation::findOrFail($id);
+
+        // Authorization check
         if ($user->role !== 'event_manager' || $reservation->event->manager_id !== $user->id) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
@@ -101,18 +100,25 @@ class ReservationController extends Controller
     }
 
     /**
-     * DELETE /reservations/{reservation}
+     * DELETE /reservations/{id}
      * Cancel a reservation (buyer only).
      */
-    public function delete(Reservation $reservation)
+    public function delete(Request $request, $id)
     {
         $user = Auth::user();
+
+        // Manually resolve or 404
+        $reservation = Reservation::findOrFail($id);
+
+        // Authorization check
         if ($user->role !== 'buyer' || $reservation->user_id !== $user->id) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
         $reservation->delete();
 
-        return response()->json(null, 204);
+        return response()->json([
+            'message' => 'Reservation deleted successfully!'
+        ], 200);
     }
 }
