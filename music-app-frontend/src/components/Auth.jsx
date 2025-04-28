@@ -3,8 +3,11 @@ import axios from 'axios';
 import { FiMail, FiLock } from 'react-icons/fi';
 import Lottie from 'lottie-react';
 import girlAnimation from '../assets/girl.json';
+import { useNavigate } from 'react-router-dom';
+
 
 function Auth() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('login');
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [registerForm, setRegisterForm] = useState({
@@ -34,15 +37,42 @@ function Auth() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+  
     try {
+      // clear any old feedback
+      setError('');
+      setMessage('');
+  
       const { data } = await axios.post(
         'http://127.0.0.1:8000/api/login',
         loginForm
       );
+  
+      // store token + user
+      sessionStorage.setItem('auth_token', data.token);
+      sessionStorage.setItem(
+        'auth_user',
+        JSON.stringify({
+          id: data.id,
+          name: data.name,
+          email: data.email,
+          role: data.role,
+          imageUrl: data.imageUrl
+        })
+      );
+  
+      // set success message
       setMessage(data.message);
+  
+      // redirect away (unmounts this component immediately)
+      navigate('/home');
     } catch (err) {
+      // clear any success message
+      setMessage('');
+  
+      // show error
       setError(err.response?.data?.error || 'Login failed');
+      console.log(err);
     } finally {
       setLoading(false);
     }
@@ -58,6 +88,8 @@ function Auth() {
         registerForm
       );
       setMessage(data.message);
+      setTimeout(() => setActiveTab('login'), 2000);
+      setLoginForm({ email: '', password: '' });
     } catch (err) {
       const resp = err.response?.data;
       setError(
