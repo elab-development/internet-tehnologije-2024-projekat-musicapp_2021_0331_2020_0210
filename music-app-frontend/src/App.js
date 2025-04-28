@@ -11,6 +11,7 @@ import Home    from './components/Home';
 import Menu    from './components/Menu';
 import Loading from './components/Loading';
 import Footer   from './components/Footer';
+import Events   from './components/Events';
 import './App.css';
 
 function App() {
@@ -61,6 +62,8 @@ function AppWithLoading() {
               : <Navigate to="/auth" replace />
           }
         />
+
+        <Route path="/events" element={<Events />} />
       </Routes>
 
       {isLoggedIn && <Footer />}
