@@ -3,47 +3,55 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  Navigate
+  Navigate,
+  useLocation
 } from 'react-router-dom';
-import Auth from './components/Auth';
-import Home from './components/Home';
-<<<<<<< HEAD
-import Menu from './components/Menu';
+import Auth    from './components/Auth';
+import Home    from './components/Home';
+import Menu    from './components/Menu';
+import Loading from './components/Loading';
 import './App.css';
-=======
-import './App.css'
->>>>>>> de3c71b98a5132915f584f8ee55a9068a14ee808
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    Boolean(sessionStorage.getItem('auth_token'))
-  );
-
-  useEffect(() => {
-    // Poll sessionStorage every second
-    const id = setInterval(() => {
-      const hasToken = Boolean(sessionStorage.getItem('auth_token'));
-      setIsLoggedIn(hasToken);
-    }, 1000);
-
-    return () => clearInterval(id);
-  }, []);
-
   return (
     <Router>
-      {/* Show the Menu only when logged in */}
+      <AppWithLoading />
+    </Router>
+  );
+}
+
+function AppWithLoading() {
+  const [loading, setLoading] = useState(false);
+  const location = useLocation();
+
+  // Compute login state each render
+  const isLoggedIn = Boolean(sessionStorage.getItem('auth_token'));
+
+  // Show loading overlay on every route change
+  useEffect(() => {
+    setLoading(true);
+    const t = setTimeout(() => setLoading(false), 3000);
+    return () => clearTimeout(t);
+  }, [location]);
+
+  // While loading, show spinner + aurora
+  if (loading) {
+    return <Loading />;
+  }
+
+  return (
+    <>
+      {/* Menu only if we have a token */}
       {isLoggedIn && <Menu />}
 
       <Routes>
         {/* Redirect root to /auth */}
         <Route path="/" element={<Navigate to="/auth" replace />} />
 
-        {/* Authentication page (always accessible) */}
+        {/* Always allow /auth so users can log in */}
         <Route path="/auth" element={<Auth />} />
-        
-        <Route path="/home" element={<Home />} />
 
-        {/* Protected home: if not logged in, go back to /auth */}
+        {/* Protect /home */}
         <Route
           path="/home"
           element={
@@ -53,7 +61,7 @@ function App() {
           }
         />
       </Routes>
-    </Router>
+    </>
   );
 }
 

@@ -228,10 +228,6 @@ select:focus {
   font-size: 3rem;
   margin: 0;
   background: linear-gradient(90deg, #42a5f5, #1e88e5);
-<<<<<<< HEAD
-=======
-  -webkit-background-clip: text;
->>>>>>> de3c71b98a5132915f584f8ee55a9068a14ee808
   -webkit-text-fill-color: transparent;
   text-shadow: 0 2px 4px rgba(23,107,230,0.4), 0 0 12px rgba(66,165,245,0.6);
 }
@@ -267,7 +263,6 @@ select:focus {
   pointer-events: none; /* so your form still receives clicks */
 }
 
-<<<<<<< HEAD
 /* src/components/Menu.css */
 
 .menu-container {
@@ -441,6 +436,67 @@ select:focus {
   color: #42a5f5;
 }
 
-=======
->>>>>>> de3c71b98a5132915f584f8ee55a9068a14ee808
+/* Loading.css */
+
+.loading-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 9999;
+}
+
+.loading-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.loading-logo {
+  display: flex;
+  align-items: center;
+  gap: 24px;           /* more spacing between icon & text */
+  margin-bottom: 32px; /* extra breathing room */
+}
+
+.loading-icon {
+  width: 120px;  /* up from 80 */
+  height: 120px;
+}
+
+.loading-text {
+  height: 100px; /* up from 60 */
+  object-fit: contain;
+}
+
+.loading-lottie {
+  width: 200px;  /* up from 120 */
+  height: 200px;
+}
+
+/* Aurora canvas stays fullscreen */
+.aurora-container {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* prevent any parent blur bleeding through */
+.loading-wrapper,
+.loading-wrapper * {
+  filter: none !important;
+  backdrop-filter: none !important;
+}
+.aurora-container,
+.aurora-container canvas {
+  filter: none !important;
+  backdrop-filter: none !important;
+}
 
