@@ -29,7 +29,7 @@ export default function Menu() {
       <div className="menu-left">
         <NavLink to="/home"         className="menu-link" style={{marginLeft: '35px'}}>Home</NavLink>
         <NavLink to="/events"       className="menu-link">Events</NavLink>
-        <NavLink to="/reservations" className="menu-link">My Reservations</NavLink>
+        <NavLink to="/my-reservations" className="menu-link">My Reservations</NavLink>
       </div>
 
       {/* CENTER ICON: spins on hover */}

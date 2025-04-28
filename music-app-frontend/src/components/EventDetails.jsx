@@ -15,8 +15,9 @@ export default function EventDetails() {
   const [reserving, setReserving] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const fetchEventData = () => {
     console.log('Fetching event with ID:', id);
+    setLoading(true);
     axios
       .get(`http://127.0.0.1:8000/api/events/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -45,6 +46,10 @@ export default function EventDetails() {
         setError(err.message || 'Failed to load event details');
       })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchEventData();
   }, [id, token]);
 
   if (loading) {
@@ -127,8 +132,32 @@ export default function EventDetails() {
       )
       .then(response => {
         console.log('Reservation successful:', response.data);
+        
+        // Update event in state to reflect new reservation count
+        if (event) {
+          const updatedEvent = {
+            ...event,
+            tickets_reserved: event.tickets_reserved + selected.length
+          };
+          setEvent(updatedEvent);
+          
+          // Mark selected seats as reserved locally
+          const updatedSeats = seats.map(seat => {
+            if (selected.includes(seat.id)) {
+              return { ...seat, reserved: true };
+            }
+            return seat;
+          });
+          setSeats(updatedSeats);
+        }
+        
+        // Clear selection
+        setSelected([]);
+        
         alert('Reservation created successfully!');
-        navigate('/my-reservations');
+        
+        // Fetch fresh data from server to ensure we have the latest state
+        fetchEventData();
       })
       .catch(error => {
         console.error('Reservation error:', error);

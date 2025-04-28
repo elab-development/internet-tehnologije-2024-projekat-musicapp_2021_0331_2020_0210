@@ -13,6 +13,7 @@ import Loading from './components/Loading';
 import Footer   from './components/Footer';
 import Events   from './components/Events';
 import Event from './components/EventDetails';
+import MyReservations from './components/MyReservations';
 import './App.css';
 
 function App() {
@@ -66,6 +67,14 @@ function AppWithLoading() {
 
         <Route path="/events" element={<Events />} />
         <Route path="/events/:id" element={<Event />} />
+        <Route 
+          path="/my-reservations" 
+          element={
+            isLoggedIn
+              ? <MyReservations />
+              : <Navigate to="/auth" replace />
+          }
+        />
       </Routes>
 
       {isLoggedIn && <Footer />}
