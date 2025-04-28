@@ -25,9 +25,10 @@ class SeatSeeder extends Seeder
                 }
             }
 
-            // Shuffle and pick exactly 50 unique seats
+            // Shuffle and pick exactly the number of seats matching tickets_capacity
             shuffle($allPositions);
-            $selected = array_slice($allPositions, 0, 50);
+            $seatsNeeded = min($event->tickets_capacity, count($allPositions));
+            $selected = array_slice($allPositions, 0, $seatsNeeded);
 
             // Prepare a Sequence of state arrays for the factory
             $states = array_map(function ($pos) use ($event) {
@@ -43,6 +44,9 @@ class SeatSeeder extends Seeder
                 ->count(count($states))
                 ->state(new Sequence(...$states))
                 ->create();
+            
+            // Log for debugging
+            $this->command->info("Created {$seatsNeeded} seats for Event #{$event->id}: {$event->title}");
         }
     }
 }

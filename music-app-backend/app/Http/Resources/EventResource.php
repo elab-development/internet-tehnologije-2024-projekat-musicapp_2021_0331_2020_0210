@@ -8,6 +8,15 @@ class EventResource extends JsonResource
 {
     public function toArray($request)
     {
+        // Add debug info to track what's being loaded
+        \Log::debug('Building EventResource', [
+            'event_id' => $this->id,
+            'venue_loaded' => $this->relationLoaded('venue'),
+            'author_loaded' => $this->relationLoaded('author'),
+            'manager_loaded' => $this->relationLoaded('manager'),
+            'seats_loaded' => $this->relationLoaded('seats'),
+        ]);
+        
         return [
             'id'                => $this->id,
             'title'             => $this->title,
@@ -17,11 +26,22 @@ class EventResource extends JsonResource
             'tickets_capacity'  => $this->tickets_capacity,
             'tickets_reserved'  => $this->tickets_reserved,
             'image_url'         => $this->image_url,
-            'venue'             => new VenueResource($this->whenLoaded('venue')),
-            'manager'           => new UserResource($this->whenLoaded('manager')),
-            'author'            => new AuthorResource($this->whenLoaded('author')),
-            'seats'             => SeatResource::collection($this->whenLoaded('seats')),
-            'attendees'         => UserResource::collection($this->whenLoaded('attendees')),
+            // Always include these relationships, even if not loaded
+            'venue'             => $this->whenLoaded('venue', function() {
+                return new VenueResource($this->venue);
+            }),
+            'manager'           => $this->whenLoaded('manager', function() {
+                return new UserResource($this->manager);
+            }),
+            'author'            => $this->whenLoaded('author', function() {
+                return new AuthorResource($this->author);
+            }),
+            'seats'             => $this->whenLoaded('seats', function() {
+                return SeatResource::collection($this->seats);
+            }),
+            'attendees'         => $this->whenLoaded('attendees', function() {
+                return UserResource::collection($this->attendees);
+            }),
             'created_at'        => $this->created_at,
             'updated_at'        => $this->updated_at,
         ];

@@ -36,8 +36,25 @@ class EventController extends Controller
         }
     
         // Manually fetch or 404
-        $event = Event::with(['venue','manager','author','seats','attendees'])
-                      ->findOrFail($id);
+        // Force fresh eager loading of all relationships
+        $event = Event::with([
+            'venue', 
+            'manager', 
+            'author', 
+            'seats',
+            'attendees', 
+            'seats.reservations'
+        ])
+        ->findOrFail($id);
+
+        // Add some debug info to help troubleshoot
+        \Log::info('Event loaded', [
+            'event_id' => $event->id,
+            'has_venue' => $event->venue ? true : false,
+            'has_manager' => $event->manager ? true : false,
+            'has_author' => $event->author ? true : false,
+            'seats_count' => $event->seats->count()
+        ]);
     
         return new EventResource($event);
     }

@@ -13,6 +13,7 @@ class SeatResource extends JsonResource
             'number_of_seats' => $this->number_of_seats,
             'position'        => $this->position,
             'event_id'        => $this->event_id,
+            'reserved'        => $this->whenLoaded('reservations', fn() => $this->reservations->isNotEmpty()),
             'created_at'      => $this->created_at,
             'updated_at'      => $this->updated_at,
         ];

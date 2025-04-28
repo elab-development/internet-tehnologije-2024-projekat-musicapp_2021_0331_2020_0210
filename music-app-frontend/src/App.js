@@ -12,6 +12,7 @@ import Menu    from './components/Menu';
 import Loading from './components/Loading';
 import Footer   from './components/Footer';
 import Events   from './components/Events';
+import Event from './components/EventDetails';
 import './App.css';
 
 function App() {
@@ -64,6 +65,7 @@ function AppWithLoading() {
         />
 
         <Route path="/events" element={<Events />} />
+        <Route path="/events/:id" element={<Event />} />
       </Routes>
 
       {isLoggedIn && <Footer />}

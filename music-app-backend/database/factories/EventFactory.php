@@ -20,12 +20,15 @@ class EventFactory extends Factory
         $start = $this->faker->dateTimeBetween('+1 days', '+30 days');
         $end   = (clone $start)->modify('+'.$this->faker->numberBetween(1, 4).' hours');
 
-        // Build a “seed” from the title so Picsum returns a consistent image per event
+        // Build a "seed" from the title so Picsum returns a consistent image per event
         $title    = $this->faker->sentence(3);
         $seed     = Str::slug($title);
         $width    = 640;
         $height   = 480;
         $imageUrl = "https://picsum.photos/seed/music-event-{$seed}/{$width}/{$height}";
+
+        // Set tickets_capacity to a more reasonable range for better UI display
+        $ticketsCapacity = $this->faker->numberBetween(30, 100);
 
         return [
             'title'            => $title,
@@ -36,8 +39,8 @@ class EventFactory extends Factory
             'manager_id'       => User::factory()->state(['role' => 'event_manager']),
             'author_id'        => Author::factory(),
             'image_url'        => $imageUrl,
-            'tickets_capacity' => $this->faker->numberBetween(50, 500),
-            'tickets_reserved' => $this->faker->numberBetween(0, 20),
+            'tickets_capacity' => $ticketsCapacity,
+            'tickets_reserved' => $this->faker->numberBetween(0, min(20, (int)($ticketsCapacity * 0.2))),
         ];
     }
 }

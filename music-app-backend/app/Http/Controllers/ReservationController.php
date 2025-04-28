@@ -57,18 +57,24 @@ class ReservationController extends Controller
         }
 
         $data = $request->validate([
-            'event_id'        => 'required|exists:events,id',
-            'number_of_seats' => 'required|integer|min:1',
+            'event_id' => 'required|exists:events,id',
+            'seats' => 'required|array|min:1',
+            'seats.*' => 'exists:seats,id',
         ]);
+
+        $number_of_seats = count($data['seats']);
 
         $reservation = Reservation::create([
-            'user_id'         => $user->id,
-            'event_id'        => $data['event_id'],
-            'number_of_seats' => $data['number_of_seats'],
-            'status'          => 'pending',
+            'user_id' => $user->id,
+            'event_id' => $data['event_id'],
+            'number_of_seats' => $number_of_seats,
+            'status' => 'pending',
         ]);
 
-        $reservation->load(['event', 'seats']);
+        // Attach the selected seats to the reservation
+        $reservation->seats()->attach($data['seats']);
+
+        $reservation->load(['event', 'seats', 'user']);
 
         return new ReservationResource($reservation);
     }

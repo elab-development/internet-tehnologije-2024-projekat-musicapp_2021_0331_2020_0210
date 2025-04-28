@@ -5,6 +5,8 @@ namespace Database\Factories;
 
 use App\Models\Author;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\RequestException;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class AuthorFactory extends Factory
@@ -47,32 +49,44 @@ class AuthorFactory extends Factory
             'Foo Fighters',
         ];
         
-
         $name = $this->faker->unique()->randomElement($artists);
+        $imageUrl = null;
 
-        // Query Wikipedia for a thumbnail image
-        $client = new Client([
-            'base_uri' => 'https://en.wikipedia.org',
-            'timeout'  => 2.0,
-        ]);
+        // Try to get image from Wikipedia API
+        try {
+            // Query Wikipedia for a thumbnail image
+            $client = new Client([
+                'base_uri' => 'https://en.wikipedia.org',
+                'timeout'  => 3.0, // Increased timeout
+            ]);
 
-        $response = $client->get('/w/api.php', [
-            'query' => [
-                'action'       => 'query',
-                'titles'       => $name,
-                'prop'         => 'pageimages',
-                'format'       => 'json',
-                'pithumbsize'  => 300,
-            ],
-        ]);
+            $response = $client->get('/w/api.php', [
+                'query' => [
+                    'action'       => 'query',
+                    'titles'       => $name,
+                    'prop'         => 'pageimages',
+                    'format'       => 'json',
+                    'pithumbsize'  => 300,
+                ],
+            ]);
 
-        $json  = json_decode($response->getBody(), true);
-        $pages = $json['query']['pages'] ?? [];
-        $page  = reset($pages);
+            $json  = json_decode($response->getBody(), true);
+            $pages = $json['query']['pages'] ?? [];
+            $page  = reset($pages);
 
-        // Fallback to placeholder if no thumbnail found
-        $imageUrl = $page['thumbnail']['source'] 
-            ?? $this->faker->imageUrl(300, 300, 'music', true);
+            // Get thumbnail if available
+            if (isset($page['thumbnail']['source'])) {
+                $imageUrl = $page['thumbnail']['source'];
+            }
+        } catch (ConnectException | RequestException $e) {
+            // Log the error but continue with fallback
+            echo "Wikipedia API error for {$name}: {$e->getMessage()}. Using placeholder instead.\n";
+        }
+
+        // Fallback to placeholder if no image from Wikipedia
+        if (!$imageUrl) {
+            $imageUrl = "https://via.placeholder.com/300x300.png?text=" . urlencode($name);
+        }
 
         return [
             'name'        => $name,
