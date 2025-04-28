@@ -4,6 +4,7 @@ body {
   margin: 0;
   background: white;
   font-family: Arial, sans-serif;
+  overflow-x: hidden;
 }
 
 .auth-container {
@@ -498,5 +499,73 @@ select:focus {
 .aurora-container canvas {
   filter: none !important;
   backdrop-filter: none !important;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* ALWAYS use the smaller footer height: */
+  padding: 4px 32px;
+  background: #ffffff;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+}
+
+.footer-left,
+.footer-center,
+.footer-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+/* Left side */
+.footer-left {
+  justify-content: flex-start;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Center logo */
+.footer-center {
+  justify-content: center;
+}
+.footer-logo {
+  width: 48px;
+  height: 48px;
+}
+
+/* Right side */
+.footer-right {
+  justify-content: flex-end;
+  cursor: pointer;
+  user-select: none;
+  gap: 8px;
+}
+
+/* “Click me” pulse */
+@keyframes click-pulse {
+  0%,100% { transform: scale(1); }
+  50%     { transform: scale(1.2); }
+}
+.click-text {
+  font-size: 1.2rem;
+  color: #1ca9c9;
+  animation: click-pulse 1s ease-in-out infinite;
+}
+
+/* Blow up the Lottie  */
+.click-lottie {
+  width: 150px !important;
+  height: 150px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  margin-left: -100px !important;
+}
+
+/* Lottie when showing music animation (smaller) */
+.music-lottie {
+  width: 80px !important;
+  height: 80px !important;
 }
 

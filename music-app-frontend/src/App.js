@@ -10,6 +10,7 @@ import Auth    from './components/Auth';
 import Home    from './components/Home';
 import Menu    from './components/Menu';
 import Loading from './components/Loading';
+import Footer   from './components/Footer';
 import './App.css';
 
 function App() {
@@ -61,6 +62,8 @@ function AppWithLoading() {
           }
         />
       </Routes>
+
+      {isLoggedIn && <Footer />}
     </>
   );
 }
