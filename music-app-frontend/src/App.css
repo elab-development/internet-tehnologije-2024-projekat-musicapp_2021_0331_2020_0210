@@ -228,6 +228,10 @@ select:focus {
   font-size: 3rem;
   margin: 0;
   background: linear-gradient(90deg, #42a5f5, #1e88e5);
+<<<<<<< HEAD
+=======
+  -webkit-background-clip: text;
+>>>>>>> de3c71b98a5132915f584f8ee55a9068a14ee808
   -webkit-text-fill-color: transparent;
   text-shadow: 0 2px 4px rgba(23,107,230,0.4), 0 0 12px rgba(66,165,245,0.6);
 }
@@ -263,6 +267,7 @@ select:focus {
   pointer-events: none; /* so your form still receives clicks */
 }
 
+<<<<<<< HEAD
 /* src/components/Menu.css */
 
 .menu-container {
@@ -436,4 +441,6 @@ select:focus {
   color: #42a5f5;
 }
 
+=======
+>>>>>>> de3c71b98a5132915f584f8ee55a9068a14ee808
 

@@ -57,7 +57,10 @@ function Auth() {
           name: data.name,
           email: data.email,
           role: data.role,
+<<<<<<< HEAD
           imageUrl: data.imageUrl
+=======
+>>>>>>> de3c71b98a5132915f584f8ee55a9068a14ee808
         })
       );
   

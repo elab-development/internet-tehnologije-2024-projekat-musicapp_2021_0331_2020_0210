@@ -34,9 +34,15 @@ export default function Home() {
             className="home-heading-img"
           />
 
+<<<<<<< HEAD
           <h2 className="home-subheading">Your ultimate music events hub</h2>
           <p className="home-text">
             Discover, stream, and share an endless mix of music events and concerts from
+=======
+          <h2 className="home-subheading">Your ultimate music hub</h2>
+          <p className="home-text">
+            Discover, stream, and share an endless mix of fresh tracks from
+>>>>>>> de3c71b98a5132915f584f8ee55a9068a14ee808
             emerging and world‑famous artists—all in one place.
           </p>
         </div>
