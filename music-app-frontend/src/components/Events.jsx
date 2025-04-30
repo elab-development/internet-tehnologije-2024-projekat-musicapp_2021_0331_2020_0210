@@ -21,14 +21,47 @@ export default function Events() {
       setError('');
       try {
         const token = sessionStorage.getItem('auth_token');
+        
+        if (!token) {
+          setError('You must be logged in to view events');
+          setLoading(false);
+          return;
+        }
+        
         const { data } = await axios.get(
           'http://127.0.0.1:8000/api/events',
-          { headers: { Authorization: `Bearer ${token}` } }
+          { 
+            headers: { 
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            } 
+          }
         );
-        // assume payload is array under data
-        setEvents(data.data || data);
+        
+        // Check if response contains data
+        if (data && (data.data || Array.isArray(data))) {
+          setEvents(data.data || data);
+        } else {
+          console.error('Unexpected response format:', data);
+          setError('Received invalid data format from the server');
+        }
       } catch (err) {
-        setError('Could not load events.');
+        console.error('Error fetching events:', err);
+        if (err.response) {
+          console.error('Response status:', err.response.status);
+          console.error('Response data:', err.response.data);
+          
+          if (err.response.status === 401) {
+            setError('Unauthorized: Your session may have expired. Please log in again.');
+            // Optional: Redirect to login
+            // window.location.href = '/auth';
+          } else {
+            setError(`Could not load events: ${err.response.data.message || err.message}`);
+          }
+        } else {
+          setError(`Could not load events: ${err.message}`);
+        }
       } finally {
         setLoading(false);
       }
