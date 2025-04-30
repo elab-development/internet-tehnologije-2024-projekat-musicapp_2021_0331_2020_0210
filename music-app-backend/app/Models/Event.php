@@ -10,21 +10,22 @@ class Event extends Model
 {
     use HasFactory;
 
+    // Polja koja se mogu masovno dodeljivati
     protected $fillable = [
-        'title',
-        'description',
-        'starts_at',
-        'ends_at',
-        'venue_id',
-        'manager_id',
-        'author_id',
-        'image_url',
-        'tickets_capacity',
-        'tickets_reserved',
+        'title',             // Naslov događaja
+        'description',       // Opis događaja
+        'starts_at',         // Vreme početka
+        'ends_at',           // Vreme završetka
+        'venue_id',          // ID lokacije (Venue)
+        'manager_id',        // ID menadžera događaja (User)
+        'author_id',         // ID izvođača/autaora (Author)
+        'image_url',         // URL slike događaja
+        'tickets_capacity',  // Ukupan kapacitet karata
+        'tickets_reserved',  // Broj već rezervisanih karata
     ];
 
     /**
-     * Venue where this event takes place.
+     * Veza ka lokaciji gde se održava događaj.
      */
     public function venue()
     {
@@ -32,7 +33,7 @@ class Event extends Model
     }
 
     /**
-     * User (role=event_manager) who manages this event.
+     * Veza ka korisniku (event_manager) koji upravlja događajem.
      */
     public function manager()
     {
@@ -40,7 +41,7 @@ class Event extends Model
     }
 
     /**
-     * Performing artist/author of this event.
+     * Veza ka autoru/izvođaču događaja.
      */
     public function author()
     {
@@ -48,7 +49,7 @@ class Event extends Model
     }
 
     /**
-     * All seats defined for this event.
+     * Sva sedišta definisana za ovaj događaj.
      */
     public function seats()
     {
@@ -56,7 +57,7 @@ class Event extends Model
     }
 
     /**
-     * All reservations for this event.
+     * Sve rezervacije za ovaj događaj.
      */
     public function reservations()
     {
@@ -64,7 +65,7 @@ class Event extends Model
     }
 
     /**
-     * Buyers attending this event (via reservations pivot).
+     * Svi kupci koji prisustvuju ovom događaju putem rezervacija.
      */
     public function attendees()
     {

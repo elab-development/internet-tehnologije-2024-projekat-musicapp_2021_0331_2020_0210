@@ -4,12 +4,17 @@ import axios from 'axios';
 import { FiPower } from 'react-icons/fi';
 
 export default function Menu() {
+  // hook za programatsku navigaciju
   const navigate = useNavigate();
+  // uzimamo token iz sessionStorage
   const token = sessionStorage.getItem('auth_token');
+  // parsiramo info o korisniku iz sessionStorage
   const user  = JSON.parse(sessionStorage.getItem('auth_user') || 'null');
-  const isEventManager = user?.role === 'event_manager';
+  // flagovi za uloge
+  const isEventManager  = user?.role === 'event_manager';
   const isAdministrator = user?.role === 'administrator';
 
+  // logout handler: poziva endpoint, briše session i redirect
   const handleLogout = async () => {
     try {
       await axios.post(
@@ -27,26 +32,39 @@ export default function Menu() {
 
   return (
     <div className="menu-container">
-      {/* LEFT NAV: slides in on hover */}
+      {/* levi panel: nav linkovi koji se pojavljuju na hover */}
       <div className="menu-left">
-        <NavLink to="/home" className="menu-link" style={{marginLeft: '35px'}}>Home</NavLink>
-        
+        <NavLink to="/home" className="menu-link" style={{ marginLeft: '35px' }}>
+          Home
+        </NavLink>
+
+        {/* prikaz linkova u zavisnosti od uloge */}
         {isAdministrator ? (
-          <NavLink to="/users" className="menu-link">Users</NavLink>
+          <NavLink to="/users" className="menu-link">
+            Users
+          </NavLink>
         ) : isEventManager ? (
           <>
-            <NavLink to="/my-events" className="menu-link">My Events</NavLink>
-            <NavLink to="/reservations-for-my-events" className="menu-link">Reservations</NavLink>
+            <NavLink to="/my-events" className="menu-link">
+              My Events
+            </NavLink>
+            <NavLink to="/reservations-for-my-events" className="menu-link">
+              Reservations
+            </NavLink>
           </>
         ) : (
           <>
-            <NavLink to="/events" className="menu-link">Events</NavLink>
-            <NavLink to="/my-reservations" className="menu-link">My Reservations</NavLink>
+            <NavLink to="/events" className="menu-link">
+              Events
+            </NavLink>
+            <NavLink to="/my-reservations" className="menu-link">
+              My Reservations
+            </NavLink>
           </>
         )}
       </div>
 
-      {/* CENTER ICON: spins on hover */}
+      {/* centralna ikonica: rotira se na hover */}
       <div className="menu-center">
         <img
           src="/images/musify-icon.png"
@@ -55,7 +73,7 @@ export default function Menu() {
         />
       </div>
 
-      {/* RIGHT USER INFO + LOGOUT */}
+      {/* desni panel: informacije o korisniku i dugme za logout */}
       <div className="menu-right">
         {user && (
           <div className="user-info">
@@ -66,7 +84,7 @@ export default function Menu() {
             />
             <div className="user-details">
               <span className="user-name">{user.name}</span>
-              <br></br>
+              <br />
               <span className="user-role">{user.role}</span>
             </div>
           </div>

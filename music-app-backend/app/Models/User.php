@@ -13,20 +13,20 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasApiTokens;
 
     /**
-     * The attributes that are mass assignable.
+     * Polja koja mogu biti masovno dodeljena (mass assignable).
      */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'role',         // enum: event_manager|buyer|administrator
-        'address',
-        'phone',
-        'image_url',
+        'name',       // ime korisnika
+        'email',      // email adresa
+        'password',   // šifrovana lozinka
+        'role',       // uloga: event_manager | buyer | administrator
+        'address',    // adresa korisnika
+        'phone',      // broj telefona
+        'image_url',  // URL do korisničke slike
     ];
 
     /**
-     * The attributes that should be hidden for arrays.
+     * Polja koja se sakrivaju pri konvertovanju u nizove/JSON.
      */
     protected $hidden = [
         'password',
@@ -34,7 +34,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * A buyer’s reservations.
+     * Rezervacije koje je ovaj kupac napravio.
      */
     public function reservations()
     {
@@ -42,7 +42,7 @@ class User extends Authenticatable
     }
 
     /**
-     * The events this user has booked (via reservations).
+     * Događaji koje je ovaj korisnik rezervisao (putem pivot tabele reservations).
      */
     public function reservedEvents()
     {
@@ -50,7 +50,7 @@ class User extends Authenticatable
     }
 
     /**
-     * If role == event_manager, the events they manage.
+     * Događaji kojima upravlja ovaj menadžer (ako je role == event_manager).
      */
     public function managedEvents()
     {

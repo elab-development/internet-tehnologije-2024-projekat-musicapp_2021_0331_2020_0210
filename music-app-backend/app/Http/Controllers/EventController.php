@@ -13,14 +13,21 @@ class EventController extends Controller
      * GET /events
      * Everyone except administrators
      */
+    // Prikazuje listu svih događaja za sve korisnike osim administratora
     public function index()
     {
+        // Uzimamo trenutno prijavljenog korisnika
         $user = Auth::user();
+
+        // Ako je korisnik administrator, vraćamo 403 Forbidden
         if ($user->role === 'administrator') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        // Učitavamo sve događaje zajedno sa pripadajućim vezama (venue, manager, author)
         $events = Event::with(['venue', 'manager', 'author'])->get();
+
+        // Vraćamo kolekciju EventResource resursa
         return EventResource::collection($events);
     }
 
@@ -28,34 +35,28 @@ class EventController extends Controller
      * GET /events/{event}
      * Everyone except administrators
      */
+    // Prikazuje detalje jednog događaja za sve korisnike osim administratora
     public function show($id)
     {
+        // Uzimamo trenutno prijavljenog korisnika
         $user = Auth::user();
+
+        // Ako je korisnik administrator, vraćamo 403 Forbidden
         if ($user->role === 'administrator') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
-    
-        // Manually fetch or 404
-        // Force fresh eager loading of all relationships
-        $event = Event::with([
-            'venue', 
-            'manager', 
-            'author', 
-            'seats',
-            'attendees', 
-            'seats.reservations'
-        ])
-        ->findOrFail($id);
 
-        // Add some debug info to help troubleshoot
-        \Log::info('Event loaded', [
-            'event_id' => $event->id,
-            'has_venue' => $event->venue ? true : false,
-            'has_manager' => $event->manager ? true : false,
-            'has_author' => $event->author ? true : false,
-            'seats_count' => $event->seats->count()
-        ]);
-    
+        // Učitavamo događaj sa svim vezama: venue, manager, author, seats, attendees, reservations
+        $event = Event::with([
+            'venue',
+            'manager',
+            'author',
+            'seats',
+            'attendees',
+            'seats.reservations'
+        ])->findOrFail($id);
+
+        // Vraćamo EventResource resurs
         return new EventResource($event);
     }
 
@@ -63,18 +64,24 @@ class EventController extends Controller
      * GET /events/my
      * Only event managers
      */
+    // Prikazuje sve događaje kojima upravlja prijavljeni menadžer
     public function showAllOfMyEvents()
     {
+        // Uzimamo trenutno prijavljenog korisnika
         $user = Auth::user();
+
+        // Ako korisnik nije event_manager, vraćamo 403 Forbidden
         if ($user->role !== 'event_manager') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        // Učitavamo događaje koje menadžer upravlja sa pripadajućim vezama
         $events = $user
             ->managedEvents()
             ->with(['venue', 'author', 'seats', 'attendees'])
             ->get();
 
+        // Vraćamo kolekciju EventResource resursa
         return EventResource::collection($events);
     }
 
@@ -82,13 +89,18 @@ class EventController extends Controller
      * POST /events
      * Only event managers
      */
+    // Kreira novi događaj (samo za menadžere)
     public function store(Request $request)
     {
+        // Uzimamo trenutno prijavljenog korisnika
         $user = Auth::user();
+
+        // Ako korisnik nije event_manager, vraćamo 403 Forbidden
         if ($user->role !== 'event_manager') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        // Validacija ulaznih podataka
         $data = $request->validate([
             'title'            => 'required|string|max:500',
             'description'      => 'required|string',
@@ -100,12 +112,17 @@ class EventController extends Controller
             'tickets_capacity' => 'required|integer|min:0',
         ]);
 
+        // Povezujemo menadžera i inicijalizujemo reserved na 0
         $data['manager_id']       = $user->id;
         $data['tickets_reserved'] = 0;
 
+        // Kreiramo događaj
         $event = Event::create($data);
+
+        // Ponovo učitavamo veze
         $event->load(['venue', 'manager', 'author', 'seats', 'attendees']);
 
+        // Vraćamo novi EventResource resurs
         return new EventResource($event);
     }
 
@@ -113,19 +130,21 @@ class EventController extends Controller
      * PUT /events/{id}
      * Only event managers on their own events
      */
+    // Ažurira postojeći događaj (samo za njegovog menadžera)
     public function update(Request $request, $id)
     {
+        // Uzimamo trenutno prijavljenog korisnika
         $user = Auth::user();
 
-        // Manually resolve or 404
+        // Pronalaženje događaja ili 404
         $event = Event::findOrFail($id);
 
-        // Authorization check
+        // Provera da li je menadžer i vlasnik događaja
         if ($user->role !== 'event_manager' || $event->manager_id !== $user->id) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        // Validate only the fields that may appear
+        // Validacija samo polja koja su prosleđena
         $data = $request->validate([
             'title'            => 'sometimes|string|max:500',
             'description'      => 'sometimes|string',
@@ -137,10 +156,13 @@ class EventController extends Controller
             'tickets_capacity' => 'sometimes|integer|min:0',
         ]);
 
-        // Apply update and reload relationships
+        // Ažuriramo događaj
         $event->update($data);
+
+        // Ponovo učitavamo veze
         $event->load(['venue', 'manager', 'author', 'seats', 'attendees']);
 
+        // Vraćamo ažurirani EventResource resurs
         return new EventResource($event);
     }
 
@@ -148,21 +170,24 @@ class EventController extends Controller
      * DELETE /events/{id}
      * Only event managers on their own events
      */
+    // Briše događaj (samo menadžer koji ga je kreirao)
     public function delete(Request $request, $id)
     {
+        // Uzimamo trenutno prijavljenog korisnika
         $user = Auth::user();
-    
-        // Manually resolve or 404
+
+        // Pronalaženje događaja ili 404
         $event = Event::findOrFail($id);
-    
-        // Authorization check
+
+        // Provera da li je menadžer i vlasnik događaja
         if ($user->role !== 'event_manager' || $event->manager_id !== $user->id) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
-    
-        // Delete and return a success message
+
+        // Brišemo događaj
         $event->delete();
-    
+
+        // Vraćamo poruku o uspehu
         return response()->json([
             'message' => 'Event deleted successfully!'
         ], 200);

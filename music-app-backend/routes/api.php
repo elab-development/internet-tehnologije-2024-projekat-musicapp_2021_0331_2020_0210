@@ -11,50 +11,51 @@ use App\Http\Controllers\ReservationController;
 
 /*
 |--------------------------------------------------------------------------
-| Public routes
+| Javni routovi
 |--------------------------------------------------------------------------
 */
 
-// Authentication
+// Autentifikacija (registracija i prijavljivanje)
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login',    [AuthController::class, 'login']);
 
-// Authors & Venues (public)
+// Autori i prostori (javno dostupno)
 Route::get('authors',       [AuthorController::class, 'index']);
 Route::get('authors/{id}',  [AuthorController::class, 'show']);
 Route::get('venues',        [VenueController::class, 'index']);
 Route::get('venues/{id}',   [VenueController::class, 'show']);
 
-// Seats as an API resource (only index & show)
+// Sedišta kao API resurs (samo lista i prikaz)
 Route::apiResource('seats', SeatController::class)
      ->only(['index', 'show']);
 
 /*
 |--------------------------------------------------------------------------
-| Protected routes (sanctum)
+| Zaštićeni routovi (sanctum)
 |--------------------------------------------------------------------------
 */
+
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Logout
+    // Odjava
     Route::post('logout', [AuthController::class, 'logout']);
 
-    // Buyers list (admin only)
+    // Lista kupaca (samo administrator)
     Route::get('buyers', [UserController::class, 'index']);
 
-    // Events
-    Route::get('events',          [EventController::class, 'index']);
-    Route::get('events/my',       [EventController::class, 'showAllOfMyEvents']);    
-    Route::get('events/{id}',     [EventController::class, 'show']);
-    Route::post('events',         [EventController::class, 'store']);
-    Route::put('events/{id}', [EventController::class, 'update']);
-    Route::delete('events/{id}',  [EventController::class, 'delete']);
-    Route::post('events/{id}/seats', [SeatController::class, 'createForEvent']);
+    // Događaji
+    Route::get('events',          [EventController::class, 'index']);             // svi događaji
+    Route::get('events/my',       [EventController::class, 'showAllOfMyEvents']); // menadžerovi događaji
+    Route::get('events/{id}',     [EventController::class, 'show']);              // detalji događaja
+    Route::post('events',         [EventController::class, 'store']);             // kreiranje događaja
+    Route::put('events/{id}',     [EventController::class, 'update']);            // izmena događaja
+    Route::delete('events/{id}',  [EventController::class, 'delete']);            // brisanje događaja
+    Route::post('events/{id}/seats', [SeatController::class, 'createForEvent']);   // kreiranje sedišta za događaj
 
-    // Reservations
-    Route::get('reservations/events',       [ReservationController::class, 'showAllOfOrdersForMyEvents']);
-    Route::get('reservations/my',           [ReservationController::class, 'showAllOfMyOrders']);
-    Route::post('reservations',             [ReservationController::class, 'store']);
-    Route::patch('reservations/{id}/status',[ReservationController::class, 'updateStatus']);
-    Route::delete('reservations/{id}',      [ReservationController::class, 'delete']);
+    // Rezervacije
+    Route::get('reservations/events',       [ReservationController::class, 'showAllOfOrdersForMyEvents']); // rezervacije za menadžerove događaje
+    Route::get('reservations/my',           [ReservationController::class, 'showAllOfMyOrders']);           // moje rezervacije
+    Route::post('reservations',             [ReservationController::class, 'store']);                        // kreiranje rezervacije
+    Route::patch('reservations/{id}/status',[ReservationController::class, 'updateStatus']);                 // ažuriranje statusa
+    Route::delete('reservations/{id}',      [ReservationController::class, 'delete']);                      // otkaz rezervacije
 });

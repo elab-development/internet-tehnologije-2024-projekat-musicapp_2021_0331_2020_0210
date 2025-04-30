@@ -9,28 +9,24 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class SeatFactory extends Factory
 {
-    /**
-     * The name of the factory's corresponding model.
-     *
-     * @var string
-     */
+    // Model koji fabričimo
     protected $model = Seat::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array
-     */
+    // Definiše podrazumevano stanje pojedinačnog sedišta
     public function definition()
     {
-        // Generate a default random position (will be overridden by Seeder Sequence)
-        $row    = chr($this->faker->numberBetween(65, 75)); // A–K
+        // Nasumično odaberi red (slovo A–K)
+        $row = chr($this->faker->numberBetween(65, 75)); // A–K
+        // Nasumično odaberi broj sedišta u okviru reda (1–30)
         $number = $this->faker->numberBetween(1, 30);
 
         return [
-            'position'        => $row . $number,
-            'event_id'        => Event::factory(),
-            'is_reserved'     => false,
+            // Pozicija sedišta, npr. "A12"
+            'position'    => $row . $number,
+            // Poveži sa novim, nasumično kreiranim događajem
+            'event_id'    => Event::factory(),
+            // Po podrazumevanju, sedište nije rezervisano
+            'is_reserved' => false,
         ];
     }
 }

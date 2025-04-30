@@ -12,24 +12,25 @@ class SeatSeeder extends Seeder
 {
     public function run()
     {
+        // Prolazimo kroz sve događaje
         foreach (Event::all() as $event) {
-            // Define how many seats we need
+            // Odredimo koliko sedišta je potrebno
             $seatsNeeded = $event->tickets_capacity;
             
-            // Define how many seats per row (19 seats per row in the first row like in the image)
+            // Broj sedišta po redu
             $seatsPerRow = 19;
             
-            // Calculate how many complete rows we need
+            // Koliko kompletnih redova treba
             $completeRows = floor($seatsNeeded / $seatsPerRow);
             
-            // Calculate how many seats in the last row
+            // Koliko sedišta ostaje za poslednji red
             $remainingSeats = $seatsNeeded % $seatsPerRow;
             
-            // Prepare the states for all seats
+            // Pripremamo niz stanja za sva sedišta
             $states = [];
             $seatCount = 1;
             
-            // Create complete rows
+            // Kreiramo kompletne redove
             for ($row = 0; $row < $completeRows; $row++) {
                 for ($seat = 0; $seat < $seatsPerRow; $seat++) {
                     $states[] = [
@@ -41,7 +42,7 @@ class SeatSeeder extends Seeder
                 }
             }
             
-            // Create the last row if needed
+            // Kreiramo preostala sedišta u poslednjem redu
             for ($seat = 0; $seat < $remainingSeats; $seat++) {
                 $states[] = [
                     'event_id'    => $event->id,
@@ -51,13 +52,13 @@ class SeatSeeder extends Seeder
                 $seatCount++;
             }
             
-            // Use the factory with a Sequence to generate seats
+            // Generišemo sedišta pomoću fabrike i Sequence stanja
             Seat::factory()
                 ->count(count($states))
                 ->state(new Sequence(...$states))
                 ->create();
             
-            // Log for debugging
+            // Ispis poruke za debagovanje
             $this->command->info("Created {$seatsNeeded} seats for Event #{$event->id}: {$event->title}");
         }
     }

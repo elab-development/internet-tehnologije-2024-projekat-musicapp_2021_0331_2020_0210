@@ -10,14 +10,15 @@ class Seat extends Model
 {
     use HasFactory;
 
+    // Polja koja mogu biti masovno dodeljena (mass assignable)
     protected $fillable = [
-        'position',
-        'event_id',
-        'is_reserved',
+        'position',    // pozicija sedišta, npr. "S1"
+        'event_id',    // ID događaja kome sedište pripada
+        'is_reserved', // da li je sedište rezervisano (boolean)
     ];
 
     /**
-     * The event this seat belongs to.
+     * Događaj kome ovo sedište pripada.
      */
     public function event()
     {
@@ -25,7 +26,7 @@ class Seat extends Model
     }
 
     /**
-     * All reservations that include this seat.
+     * Sve rezervacije koje uključuju ovo sedište.
      */
     public function reservations()
     {

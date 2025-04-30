@@ -8,84 +8,79 @@ use App\Models\Seat;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class SeatController extends Controller
 {
     /**
      * GET /seats
-     * Public: list all seats.
+     * Javno: lista svih sedišta.
      */
     public function index()
     {
+        // Učitavamo sva sedišta zajedno sa rezervacijama
         $seats = Seat::with('reservations')->get();
         return SeatResource::collection($seats);
     }
 
     /**
      * GET /seats/{id}
-     * Public: show a single seat by id.
+     * Javno: prikaz jednog sedišta po ID-ju.
      */
     public function show($id)
     {
+        // Pronalazimo sedište ili vratimo 404 grešku
         $seat = Seat::with('reservations')->findOrFail($id);
         return new SeatResource($seat);
     }
     
     /**
      * POST /events/{id}/seats
-     * Protected: create multiple seats for an event.
-     * Only the event manager can create seats for their events.
+     * Zaštićeno: kreiranje više sedišta za dati događaj.
+     * Samo menadžer događaja ili administrator može ovo da izvede.
      */
     public function createForEvent(Request $request, $eventId)
     {
-        // Find the event
+        // Pronalazimo događaj ili vraćamo 404
         $event = Event::findOrFail($eventId);
         
-        // Check if the authenticated user is the event manager
+        // Provera autorizacije: samo menadžer događaja ili admin
         $user = Auth::user();
         if ($user->id !== $event->manager_id && $user->role !== 'admin') {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
         
-        // Validate request data
+        // Validiramo ulazne podatke
         $validatedData = $request->validate([
-            'seats' => 'required|array',
-            'seats.*.position' => 'required|string',
+            'seats'               => 'required|array',
+            'seats.*.position'    => 'required|string',
             'seats.*.is_reserved' => 'boolean',
-        ]);
-        
-        // Log the incoming seats data
-        Log::info('Creating seats for event', [
-            'event_id' => $eventId,
-            'seats_count' => count($validatedData['seats']),
-            'sample_positions' => array_slice(array_column($validatedData['seats'], 'position'), 0, 10)
         ]);
         
         $createdSeats = [];
         
-        // Create all seats in a single transaction
+        // Kreiramo sedišta unutar transakcije radi sigurnosti
         \DB::transaction(function () use ($event, $validatedData, &$createdSeats) {
-            // First, clear any existing seats for this event
+            // Brišemo postojeća sedišta za događaj
             Seat::where('event_id', $event->id)->delete();
             
-            // Create new seats with row information
+            // Kreiramo nova sedišta
             foreach ($validatedData['seats'] as $seatData) {
                 $seat = new Seat([
-                    'position' => $seatData['position'],
-                    'event_id' => $event->id,
-                    'is_reserved' => $seatData['is_reserved'] ?? false, // Default to false if not provided
+                    'position'    => $seatData['position'],
+                    'event_id'    => $event->id,
+                    'is_reserved' => $seatData['is_reserved'] ?? false, // podrazumevano false
                 ]);
                 
                 $seat->save();
                 $createdSeats[] = $seat;
             }
             
-            // Update event tickets capacity to match the number of seats
+            // Ažuriramo kapacitet karata događaja na novi broj sedišta
             $event->tickets_capacity = count($createdSeats);
             $event->save();
         });
         
+        // Vraćamo novokreirana sedišta kao resurs
         return SeatResource::collection(collect($createdSeats));
     }
 }

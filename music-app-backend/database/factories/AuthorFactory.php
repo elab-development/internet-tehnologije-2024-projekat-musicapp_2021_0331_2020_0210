@@ -11,11 +11,13 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class AuthorFactory extends Factory
 {
+    // Model koji ova fabrika kreira
     protected $model = Author::class;
 
+    // Definicija podataka za autora
     public function definition()
     {
-        // A curated list of real artists
+        // Podešena lista stvarnih izvođača
         static $artists = [
             'The Beatles',
             'Taylor Swift',
@@ -52,12 +54,12 @@ class AuthorFactory extends Factory
         $name = $this->faker->unique()->randomElement($artists);
         $imageUrl = null;
 
-        // Try to get image from Wikipedia API
+        // Pokušaj da se preuzme slika preko Wikipedia API-ja
         try {
-            // Query Wikipedia for a thumbnail image
+            // Upit Wikipedia API-ja za minijaturu slike
             $client = new Client([
                 'base_uri' => 'https://en.wikipedia.org',
-                'timeout'  => 3.0, // Increased timeout
+                'timeout'  => 3.0, // Timeout u sekundama
             ]);
 
             $response = $client->get('/w/api.php', [
@@ -74,16 +76,16 @@ class AuthorFactory extends Factory
             $pages = $json['query']['pages'] ?? [];
             $page  = reset($pages);
 
-            // Get thumbnail if available
+            // Dobijamo minijaturu ako postoji
             if (isset($page['thumbnail']['source'])) {
                 $imageUrl = $page['thumbnail']['source'];
             }
         } catch (ConnectException | RequestException $e) {
-            // Log the error but continue with fallback
+            // Logovanje greške, ali nastavljamo sa rezervnom opcijom
             echo "Wikipedia API error for {$name}: {$e->getMessage()}. Using placeholder instead.\n";
         }
 
-        // Fallback to placeholder if no image from Wikipedia
+        // Rezervna opcija: placeholder ako nema slike sa Wikipedia-e
         if (!$imageUrl) {
             $imageUrl = "https://via.placeholder.com/300x300.png?text=" . urlencode($name);
         }

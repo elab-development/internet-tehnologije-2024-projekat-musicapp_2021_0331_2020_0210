@@ -4,50 +4,58 @@ import axios from 'axios';
 import Particles from './Particles';
 import Breadcrumbs from './Breadcrumbs';
 
-// heading image
+// slika zaglavlja iz public/images/users.png
 const HEADING_SRC = '/images/users.png';
 
 export default function Users() {
+  // hook za navigaciju između ruta
   const navigate = useNavigate();
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  // stanja komponente
+  const [users, setUsers]           = useState([]);    // lista korisnika
+  const [loading, setLoading]       = useState(true);  // indikator učitavanja
+  const [error, setError]           = useState('');    // poruka o grešci
 
+  // efekat koji pri mount-u učitava korisnike
   useEffect(() => {
     const fetchUsers = async () => {
-      setLoading(true);
-      setError('');
-      
+      setLoading(true);    // prikaz loader-a
+      setError('');        // reset poruke o grešci
+
       try {
         const token = sessionStorage.getItem('auth_token');
+        // ako nema tokena, preusmeri na login
         if (!token) {
           navigate('/auth');
           return;
         }
 
-        const user = JSON.parse(sessionStorage.getItem('auth_user') || 'null');
-        if (user?.role !== 'administrator') {
+        // proveravamo da li je uloga administrator
+        const currentUser = JSON.parse(sessionStorage.getItem('auth_user') || 'null');
+        if (currentUser?.role !== 'administrator') {
           navigate('/home');
           return;
         }
 
+        // GET zahtev za listu buyer korisnika
         const { data } = await axios.get(
           'http://127.0.0.1:8000/api/buyers',
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        
+
+        // postavljamo povratne podatke u state
         setUsers(data.data || data);
       } catch (err) {
         console.error('Error fetching users:', err);
         setError('Could not load users. Please try again later.');
       } finally {
-        setLoading(false);
+        setLoading(false);  // isključujemo loader
       }
     };
-    
+
     fetchUsers();
   }, [navigate]);
 
+  // prikaz loader-a sa posebnom animacijom i porukom
   if (loading) {
     return (
       <div className="page-container loading-container">
@@ -65,6 +73,7 @@ export default function Users() {
     );
   }
 
+  // prikaz ekrana za grešku sa retry opcijom
   if (error) {
     return (
       <div className="page-container error-container">
@@ -86,8 +95,10 @@ export default function Users() {
     );
   }
 
+  // glavni prikaz stranice sa tabelom korisnika ili praznim stanjem
   return (
     <div className="page-container users-page">
+      {/* pozadinska čestica animacija */}
       <Particles
         particleColors={['#e3f2fd', '#bbdefb', '#90caf9']}
         particleCount={150}
@@ -96,12 +107,15 @@ export default function Users() {
       />
 
       <div className="content-wrapper">
+        {/* zaglavlje sa malom slikom */}
         <header className="page-header users-header">
           <img src={HEADING_SRC} alt="Users" className="header-image-small" />
         </header>
         
+        {/* breadcrumbs navigacija */}
         <Breadcrumbs />
 
+        {/* sadržaj tabele ili prazno stanje */}
         <div className="users-content">
           {users.length === 0 ? (
             <div className="empty-state">
@@ -123,26 +137,35 @@ export default function Users() {
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map((user) => (
+                    {users.map(user => (
                       <tr key={user.id}>
+                        {/* ID korisnika */}
                         <td>{user.id}</td>
+                        {/* ime i avatar iz inicijala */}
                         <td>
                           <div className="user-name-cell">
-                            <span className="user-avatar-small">{user.name.charAt(0).toUpperCase()}</span>
+                            <span className="user-avatar-small">
+                              {user.name.charAt(0).toUpperCase()}
+                            </span>
                             <span>{user.name}</span>
                           </div>
                         </td>
+                        {/* email */}
                         <td>{user.email}</td>
+                        {/* uloga sa badgom */}
                         <td>
                           <span className={`role-badge role-${user.role}`}>
                             {user.role}
                           </span>
                         </td>
-                        <td>{new Date(user.created_at).toLocaleDateString(undefined, {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        })}</td>
+                        {/* datum registracije */}
+                        <td>
+                          {new Date(user.created_at).toLocaleDateString(undefined, {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -154,4 +177,4 @@ export default function Users() {
       </div>
     </div>
   );
-} 
+}

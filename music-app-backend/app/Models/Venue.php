@@ -10,17 +10,20 @@ class Venue extends Model
 {
     use HasFactory;
 
+    /**
+     * Polja koja mogu biti masovno dodeljena (mass assignable)
+     */
     protected $fillable = [
-        'name',
-        'city',
-        'country',
-        'address',
-        'capacity_people',
-        'image_url',
+        'name',            // naziv prostora
+        'city',            // grad
+        'country',         // država
+        'address',         // adresa
+        'capacity_people', // kapacitet ljudi
+        'image_url',       // URL slike prostora
     ];
 
     /**
-     * A venue hosts many events.
+     * Veza: prostor može ugostiti više događaja.
      */
     public function events()
     {

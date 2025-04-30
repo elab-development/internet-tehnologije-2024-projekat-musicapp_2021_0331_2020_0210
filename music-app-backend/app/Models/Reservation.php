@@ -10,17 +10,16 @@ class Reservation extends Model
 {
     use HasFactory;
 
+    // Polja koja se mogu masovno dodeljivati
     protected $fillable = [
-        'user_id',
-        'event_id',
-        'status',
-        // you can drop number_of_seats now if you're using actual seats,
-        // or keep it as a cache/summary field
-        'number_of_seats',
+        'user_id',           // ID kupca koji rezerviše
+        'event_id',          // ID događaja koji se rezerviše
+        'status',            // Status rezervacije (pending, confirmed, cancelled)
+        'number_of_seats',   // Broj rezervisanih sedišta (može se koristiti kao keš polje)
     ];
 
     /**
-     * The buyer who made this reservation.
+     * Kupac koji je napravio ovu rezervaciju.
      */
     public function user()
     {
@@ -28,7 +27,7 @@ class Reservation extends Model
     }
 
     /**
-     * The event being reserved.
+     * Događaj koji se rezerviše.
      */
     public function event()
     {
@@ -36,7 +35,7 @@ class Reservation extends Model
     }
 
     /**
-     * The seats assigned to this reservation.
+     * Sedišta povezana sa ovom rezervacijom (pivot tabela reservation_seat).
      */
     public function seats()
     {

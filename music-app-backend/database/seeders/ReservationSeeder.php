@@ -12,47 +12,59 @@ class ReservationSeeder extends Seeder
 {
     public function run()
     {
+        // Učitaj sve kupce sa ulogom "buyer"
         $buyers = User::where('role', 'buyer')->get();
+        // Učitaj sve događaje
         $events = Event::all();
 
-        // Track seat counts per event
+        // Prati broj rezervisanih sedišta po događaju
         $eventSeatCounts = [];
 
         foreach ($buyers as $buyer) {
-            $count = rand(1, 3); // Reduced from 1-5 to 1-3 to avoid too many reservations
+            // Generiši koliko rezervacija će ovaj kupac kreirati (1–3)
+            $count = rand(1, 3); // Smanjeno sa 1–5 na 1–3 da se izbegne previše rezervacija
             for ($i = 0; $i < $count; $i++) {
                 $event = $events->random();
                 
-                // Initialize counter for this event if not set
+                // Inicijalizuj brojač za ovaj događaj ako nije postavljen
                 if (!isset($eventSeatCounts[$event->id])) {
                     $eventSeatCounts[$event->id] = 0;
                 }
                 
-                // Don't exceed 80% of event capacity
-                $maxSeatsToReserve = min(3, (int)($event->tickets_capacity * 0.8) - $eventSeatCounts[$event->id]);
+                // Ne prelazi 80% kapaciteta događaja
+                $maxSeatsToReserve = min(
+                    3,
+                    (int)($event->tickets_capacity * 0.8) - $eventSeatCounts[$event->id]
+                );
                 
                 if ($maxSeatsToReserve <= 0) {
-                    // Skip this iteration if we can't reserve more seats
+                    // Preskoči ovu iteraciju ako ne možemo rezervisati više sedišta
                     continue;
                 }
                 
                 $numSeats = rand(1, $maxSeatsToReserve);
                 
+                // Kreiraj rezervaciju sa odgovarajućim brojem sedišta
                 $reservation = Reservation::factory()->create([
                     'user_id'         => $buyer->id,
                     'event_id'        => $event->id,
                     'number_of_seats' => $numSeats,
                 ]);
                 
-                // Increment count for this event
+                // Povećaj brojač za ovaj događaj
                 $eventSeatCounts[$event->id] += $numSeats;
             }
         }
         
-        // Update all events with their correct number of reserved seats
+        // Ažuriraj sve događaje sa tačnim brojem rezervisanih sedišta
         foreach ($eventSeatCounts as $eventId => $count) {
-            Event::where('id', $eventId)->update(['tickets_reserved' => $count]);
-            $this->command->info("Event #{$eventId}: {$count} seats reserved out of " . Event::find($eventId)->tickets_capacity);
+            Event::where('id', $eventId)
+                ->update(['tickets_reserved' => $count]);
+            // Ispiši u konzolu koliko je sedišta rezervisano
+            $this->command->info(
+                "Event #{$eventId}: {$count} seats reserved out of " .
+                Event::find($eventId)->tickets_capacity
+            );
         }
     }
 }

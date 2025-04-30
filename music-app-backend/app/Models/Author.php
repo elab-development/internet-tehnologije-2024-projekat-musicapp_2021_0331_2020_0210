@@ -10,17 +10,19 @@ class Author extends Model
 {
     use HasFactory;
 
+    // Polja koja su dozvoljena za masovno dodeljivanje (mass assignment)
     protected $fillable = [
-        'name',
-        'music_genre',
-        'image_url',
+        'name',         // Ime autora
+        'music_genre',  // Muzički žanr autora
+        'image_url',    // URL slike autora
     ];
 
     /**
-     * An author can be linked to many events.
+     * Veza 1:N – Autor može imati više događaja.
      */
     public function events()
     {
+        // Vraća sve događaje kojima je ovaj autor dodeljen
         return $this->hasMany(Event::class, 'author_id');
     }
 }

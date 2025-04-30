@@ -4,10 +4,10 @@ import axios from 'axios';
 import Particles from './Particles';
 import Breadcrumbs from './Breadcrumbs';
 
-// heading image
+// slika zaglavlja (u public/images/my-events.png)
 const HEADING_SRC = '/images/my-events.png';
 
-// Custom card component for managers (no View Details button)
+// komponenta kartice za event menadžera (bez dugmeta za detalje)
 const ManagerEventCard = ({ event, onDelete }) => {
   const {
     image_url,
@@ -18,7 +18,7 @@ const ManagerEventCard = ({ event, onDelete }) => {
     ends_at,
   } = event;
 
-  // Format dates nicely
+  // formatiramo ISO datum za prikaz
   const formatDate = (iso) =>
     new Date(iso).toLocaleString(undefined, {
       dateStyle: 'medium',
@@ -42,7 +42,7 @@ const ManagerEventCard = ({ event, onDelete }) => {
           {formatDate(starts_at)} – {formatDate(ends_at)}
         </p>
         <div className="card-actions">
-          <button 
+          <button
             className="card-button delete-button full-width"
             onClick={() => onDelete(event.id)}
           >
@@ -54,8 +54,16 @@ const ManagerEventCard = ({ event, onDelete }) => {
   );
 };
 
-// Modal component for creating events
-const CreateEventModal = ({ isOpen, onClose, onCreate, venues, authors, isLoadingOptions }) => {
+// modal za kreiranje novog događaja
+const CreateEventModal = ({
+  isOpen,
+  onClose,
+  onCreate,
+  venues,
+  authors,
+  isLoadingOptions
+}) => {
+  // stanja forme
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -69,22 +77,21 @@ const CreateEventModal = ({ isOpen, onClose, onCreate, venues, authors, isLoadin
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
 
+  // ako modal nije otvoren, ništa ne renderujemo
   if (!isOpen) return null;
 
+  // handler za promenu input polja
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // validacija i slanje forme
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setFormError('');
 
-    // Validate tickets capacity
     if (!formData.tickets_capacity || formData.tickets_capacity < 1) {
       setFormError('Tickets capacity is required and must be at least 1');
       setIsSubmitting(false);
@@ -93,7 +100,7 @@ const CreateEventModal = ({ isOpen, onClose, onCreate, venues, authors, isLoadin
 
     try {
       await onCreate(formData);
-      // Reset form and close modal on success
+      // resetujemo formu i zatvaramo modal
       setFormData({
         title: '',
         description: '',
@@ -106,20 +113,18 @@ const CreateEventModal = ({ isOpen, onClose, onCreate, venues, authors, isLoadin
       });
       onClose();
     } catch (err) {
-      setFormError('Failed to create event. Please check your inputs and try again.');
       console.error('Error creating event:', err);
+      setFormError('Failed to create event. Please check your inputs and try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Ensure form dates are in the correct format for datetime-local input
-  const formatDateForInput = (date) => {
-    if (!date) return '';
-    return new Date(date).toISOString().slice(0, 16);
-  };
+  // formatiramo datum za input type="datetime-local"
+  const formatDateForInput = (date) =>
+    date ? new Date(date).toISOString().slice(0, 16) : '';
 
-  // Close modal when clicking on the overlay (outside the modal content)
+  // zatvaramo modal klikom van sadržaja
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -133,25 +138,25 @@ const CreateEventModal = ({ isOpen, onClose, onCreate, venues, authors, isLoadin
           <h2>Create New Event</h2>
           <button className="modal-close-btn" onClick={onClose}>×</button>
         </div>
-        
+
         {formError && <div className="form-error">{formError}</div>}
-        
+
         <form onSubmit={handleSubmit} className="create-event-form">
+          {/* polja za title, description, image_url */}
           <div className="form-group">
             <label htmlFor="title">
               Event Title <span className="required-field">*</span>
             </label>
             <input
-              type="text"
               id="title"
               name="title"
+              type="text"
               value={formData.title}
               onChange={handleChange}
               required
               placeholder="Enter event title"
             />
           </div>
-          
           <div className="form-group">
             <label htmlFor="description">
               Description <span className="required-field">*</span>
@@ -166,52 +171,52 @@ const CreateEventModal = ({ isOpen, onClose, onCreate, venues, authors, isLoadin
               placeholder="Describe your event"
             />
           </div>
-          
           <div className="form-group">
             <label htmlFor="image_url">
               Image URL <span className="required-field">*</span>
             </label>
             <input
-              type="url"
               id="image_url"
               name="image_url"
+              type="url"
               value={formData.image_url}
               onChange={handleChange}
               required
               placeholder="https://example.com/image.jpg"
             />
           </div>
-          
+
+          {/* polja za start/end datetime */}
           <div className="form-row">
             <div className="form-group half">
               <label htmlFor="starts_at">
                 Start Date/Time <span className="required-field">*</span>
               </label>
               <input
-                type="datetime-local"
                 id="starts_at"
                 name="starts_at"
+                type="datetime-local"
                 value={formatDateForInput(formData.starts_at)}
                 onChange={handleChange}
                 required
               />
             </div>
-            
             <div className="form-group half">
               <label htmlFor="ends_at">
                 End Date/Time <span className="required-field">*</span>
               </label>
               <input
-                type="datetime-local"
                 id="ends_at"
                 name="ends_at"
+                type="datetime-local"
                 value={formatDateForInput(formData.ends_at)}
                 onChange={handleChange}
                 required
               />
             </div>
           </div>
-          
+
+          {/* select za venue i author */}
           <div className="form-group">
             <label htmlFor="venue_id">
               Venue <span className="required-field">*</span>
@@ -225,22 +230,19 @@ const CreateEventModal = ({ isOpen, onClose, onCreate, venues, authors, isLoadin
               disabled={isLoadingOptions}
             >
               {isLoadingOptions ? (
-                <option value="">Loading venues...</option>
+                <option>Loading venues...</option>
               ) : (
                 <>
                   <option value="">Select a venue</option>
-                  {Array.isArray(venues) && venues.length > 0 ? venues.map(venue => (
-                    <option key={venue.id} value={venue.id}>
-                      {venue.name} - {venue.address}, {venue.city}
+                  {venues.map(v => (
+                    <option key={v.id} value={v.id}>
+                      {v.name} - {v.address}, {v.city}
                     </option>
-                  )) : (
-                    <option value="" disabled>No venues available</option>
-                  )}
+                  ))}
                 </>
               )}
             </select>
           </div>
-          
           <div className="form-group">
             <label htmlFor="author_id">
               Artist/Author <span className="required-field">*</span>
@@ -254,52 +256,52 @@ const CreateEventModal = ({ isOpen, onClose, onCreate, venues, authors, isLoadin
               disabled={isLoadingOptions}
             >
               {isLoadingOptions ? (
-                <option value="">Loading artists...</option>
+                <option>Loading artists...</option>
               ) : (
                 <>
                   <option value="">Select an artist</option>
-                  {Array.isArray(authors) && authors.length > 0 ? authors.map(author => (
-                    <option key={author.id} value={author.id}>
-                      {author.name} - {author.music_genre}
+                  {authors.map(a => (
+                    <option key={a.id} value={a.id}>
+                      {a.name} - {a.music_genre}
                     </option>
-                  )) : (
-                    <option value="" disabled>No artists available</option>
-                  )}
+                  ))}
                 </>
               )}
             </select>
           </div>
-          
+
+          {/* polje za tickets capacity */}
           <div className="form-group">
             <label htmlFor="tickets_capacity">
               Tickets Capacity <span className="required-field">*</span>
             </label>
             <input
-              type="number"
               id="tickets_capacity"
               name="tickets_capacity"
+              type="number"
               min="1"
               max="1000"
               value={formData.tickets_capacity}
               onChange={handleChange}
               required
-              placeholder="Number of available tickets"
-              className={formData.tickets_capacity < 1 ? 'input-error' : ''}
             />
-            <small className="field-hint">Required - Enter the total number of tickets available for this event</small>
+            <small className="field-hint">
+              Required - Enter the total number of tickets available for this event
+            </small>
           </div>
-          
+
+          {/* dugmad za cancel i submit */}
           <div className="form-actions">
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="cancel-form-btn"
-              onClick={onClose} 
+              onClick={onClose}
               disabled={isSubmitting}
             >
               Cancel
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="submit-form-btn"
               disabled={isSubmitting}
             >
@@ -313,26 +315,28 @@ const CreateEventModal = ({ isOpen, onClose, onCreate, venues, authors, isLoadin
 };
 
 export default function MyEvents() {
+  // hook za navigaciju
   const navigate = useNavigate();
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  // stanja komponente
+  const [events, setEvents]     = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [venues, setVenues] = useState([]);
-  const [authors, setAuthors] = useState([]);
+  const [venues, setVenues]     = useState([]);
+  const [authors, setAuthors]   = useState([]);
   const [fetchingOptions, setFetchingOptions] = useState(false);
 
+  // učitavanje događaja menadžera
   const fetchEvents = useCallback(async () => {
     setLoading(true);
     setError('');
-    
+
     try {
       const token = sessionStorage.getItem('auth_token');
       if (!token) {
         navigate('/auth');
         return;
       }
-
       const user = JSON.parse(sessionStorage.getItem('auth_user') || 'null');
       if (user?.role !== 'event_manager') {
         navigate('/home');
@@ -343,7 +347,6 @@ export default function MyEvents() {
         'http://127.0.0.1:8000/api/events/my',
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
       setEvents(data.data || data);
     } catch (err) {
       console.error('Error fetching events:', err);
@@ -353,143 +356,91 @@ export default function MyEvents() {
     }
   }, [navigate]);
 
+  // efekt za inicijalno učitavanje
   useEffect(() => {
     fetchEvents();
   }, [fetchEvents]);
 
+  // učitavanje opcija za modal (venues i authors)
   const fetchOptionsForModal = async () => {
     setFetchingOptions(true);
     try {
       const token = sessionStorage.getItem('auth_token');
-      
-      // Fetch venues
-      const venuesResponse = await axios.get(
+
+      const venuesRes = await axios.get(
         'http://127.0.0.1:8000/api/venues',
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
-      // Parse the response carefully, handle different response formats
-      let venuesData = [];
-      if (venuesResponse.data) {
-        if (Array.isArray(venuesResponse.data)) {
-          venuesData = venuesResponse.data;
-        } else if (venuesResponse.data.data && Array.isArray(venuesResponse.data.data)) {
-          venuesData = venuesResponse.data.data;
-        }
-      }
-      
-      setVenues(venuesData);
-      
-      // Fetch authors/artists
-      const authorsResponse = await axios.get(
+      setVenues(venuesRes.data.data || venuesRes.data);
+
+      const authorsRes = await axios.get(
         'http://127.0.0.1:8000/api/authors',
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
-      // Parse the response carefully, handle different response formats
-      let authorsData = [];
-      if (authorsResponse.data) {
-        if (Array.isArray(authorsResponse.data)) {
-          authorsData = authorsResponse.data;
-        } else if (authorsResponse.data.data && Array.isArray(authorsResponse.data.data)) {
-          authorsData = authorsResponse.data.data;
-        }
-      }
-      
-      setAuthors(authorsData);
-      
+      setAuthors(authorsRes.data.data || authorsRes.data);
     } catch (err) {
-      console.error('Error fetching options for modal:', err);
-      // More detailed error message
-      alert(`Could not load venues and artists. Error: ${err.message || 'Unknown error'}`);
+      console.error('Error fetching modal options:', err);
+      alert(`Could not load venues and artists. Error: ${err.message}`);
       setIsModalOpen(false);
     } finally {
       setFetchingOptions(false);
     }
   };
 
+  // otvaranje modala i učitavanje opcija
   const handleCreateEvent = () => {
     setIsModalOpen(true);
     fetchOptionsForModal();
   };
 
+  // zatvaranje modala
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
 
+  // kreiranje događaja i sedišta
   const handleCreateEventSubmit = async (formData) => {
     const token = sessionStorage.getItem('auth_token');
-    
     try {
-      // First create the event
+      // kreiramo event
       const response = await axios.post(
         'http://127.0.0.1:8000/api/events',
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
       const eventId = response.data.data.id;
-      
-      // Then create seats with proper row identifiers
+
+      // generišemo niz sedišta prema kapacitetu
       const seats = [];
-      const totalCapacity = formData.tickets_capacity;
-      let seatsCreated = 0;
-      
-      // Row 1: S, S1, S2, S3, ..., S18 (19 seats)
-      const row1Labels = ['S', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10', 'S11', 'S12', 'S13', 'S14', 'S15', 'S16', 'S17', 'S18'];
-      
-      // Create first row (or partial row if capacity < 19)
-      for (let i = 0; i < Math.min(19, totalCapacity); i++) {
-        seats.push({
-          position: row1Labels[i],
-          is_reserved: false
-        });
-        seatsCreated++;
+      const total = formData.tickets_capacity;
+      let count = 0;
+      const row1 = ['S','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11','S12','S13','S14','S15','S16','S17','S18'];
+      for (let i=0; i<Math.min(19,total); i++) {
+        seats.push({ position: row1[i], is_reserved: false });
+        count++;
       }
-      
-      if (totalCapacity > 19) {
-        // Row 2: S19, S20, ..., S38
-        for (let i = 19; i < Math.min(38, totalCapacity); i++) {
-          seats.push({
-            position: `S${i}`,
-            is_reserved: false
-          });
-          seatsCreated++;
-        }
+      for (let i=19; i<Math.min(38,total); i++) {
+        seats.push({ position: `S${i}`, is_reserved: false });
+        count++;
       }
-      
-      if (totalCapacity > 38) {
-        // Row 3: S39, S40, ..., S57
-        for (let i = 39; i < Math.min(58, totalCapacity); i++) {
-          seats.push({
-            position: `S${i}`,
-            is_reserved: false
-          });
-          seatsCreated++;
-        }
+      for (let i=39; i<Math.min(58,total); i++) {
+        seats.push({ position: `S${i}`, is_reserved: false });
+        count++;
       }
-      
-      // If we need more seats, continue the pattern
-      if (seatsCreated < totalCapacity) {
-        let nextSeat = 58;
-        while (seatsCreated < totalCapacity) {
-          seats.push({
-            position: `S${nextSeat}`,
-            is_reserved: false
-          });
-          nextSeat++;
-          seatsCreated++;
-        }
+      let next = 58;
+      while (count < total) {
+        seats.push({ position: `S${next}`, is_reserved: false });
+        next++; count++;
       }
-      
-      // Create seats for the event
+
+      // šaljemo zahtev za kreiranje sedišta
       await axios.post(
         `http://127.0.0.1:8000/api/events/${eventId}/seats`,
         { seats },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
-      // Refresh the events list
+
+      // osvežavamo listu događaja
       fetchEvents();
     } catch (err) {
       console.error('Error creating event or seats:', err);
@@ -497,53 +448,52 @@ export default function MyEvents() {
     }
   };
 
+  // brisanje događaja
   const handleDeleteEvent = async (eventId) => {
-    if (!window.confirm('Are you sure you want to delete this event?')) {
-      return;
-    }
-
+    if (!window.confirm('Are you sure you want to delete this event?')) return;
     try {
       const token = sessionStorage.getItem('auth_token');
       await axios.delete(
         `http://127.0.0.1:8000/api/events/${eventId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
-      // Remove from state
-      setEvents(events.filter(event => event.id !== eventId));
+      setEvents(events.filter(e => e.id !== eventId));
     } catch (err) {
       console.error('Error deleting event:', err);
       alert('Failed to delete the event. Please try again.');
     }
   };
 
+  // prikaz loadera ili greške
   if (loading) return <div className="events-loading">Loading…</div>;
-  if (error) return <div className="events-error">{error}</div>;
+  if (error)   return <div className="events-error">{error}</div>;
 
   return (
     <div className="events-page my-events-page">
+      {/* pozadinska čestica */}
       <Particles
-        particleColors={['#e3f2fd', '#bbdefb', '#90caf9']}
+        particleColors={['#e3f2fd','#bbdefb','#90caf9']}
         particleCount={150}
         particleSpread={8}
         speed={0.1}
       />
 
+      {/* zaglavlje sa slikom */}
       <header className="events-header">
         <img src={HEADING_SRC} alt="My Events" />
       </header>
 
+      {/* navigacioni breadcrumbs */}
       <Breadcrumbs />
 
+      {/* dugme za otvaranje modala */}
       <div className="events-controls">
-        <button 
-          className="create-event-btn"
-          onClick={handleCreateEvent}
-        >
+        <button className="create-event-btn" onClick={handleCreateEvent}>
           Create New Event
         </button>
       </div>
 
+      {/* prikaz poruke ako nema događaja */}
       {events.length === 0 ? (
         <div className="no-events">
           <p>You haven't created any events yet.</p>
@@ -551,7 +501,7 @@ export default function MyEvents() {
         </div>
       ) : (
         <div className="events-grid">
-          {events.map((event) => (
+          {events.map(event => (
             <ManagerEventCard
               key={event.id}
               event={event}
@@ -561,7 +511,7 @@ export default function MyEvents() {
         </div>
       )}
 
-      {/* Modal for creating events */}
+      {/* modal za kreiranje događaja */}
       <CreateEventModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
@@ -572,4 +522,4 @@ export default function MyEvents() {
       />
     </div>
   );
-} 
+}

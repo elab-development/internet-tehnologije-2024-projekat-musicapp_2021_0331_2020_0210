@@ -1,35 +1,35 @@
 <?php
-// app/Http/Controllers/AuthorController.php
+// Kontroler za autore – omogućava listanje i pregled pojedinačnih autora
 
 namespace App\Http\Controllers;
 
 use App\Http\Resources\AuthorResource;
 use App\Models\Author;
-use Illuminate\Support\Facades\Log;
 
 class AuthorController extends Controller
 {
     /**
      * GET /authors
-     * Public: list all authors.
+     * Javni endpoint za listanje svih autora.
      */
     public function index()
     {
+        // Učitavamo sve autore iz baze
         $authors = Author::all();
         
-        // Add debugging
-        Log::info('Authors retrieved', ['count' => $authors->count()]);
-        
+        // Vraćamo kolekciju resursa
         return AuthorResource::collection($authors);
     }
 
     /**
      * GET /authors/{id}
-     * Public: show a single author by id.
+     * Javni endpoint za prikaz jednog autora po ID-u.
      */
     public function show($id)
     {
+        // Pokušavamo da pronađemo autora ili bacamo 404
         $author = Author::findOrFail($id);
+        // Vraćamo resurs za pronađenog autora
         return new AuthorResource($author);
     }
 }

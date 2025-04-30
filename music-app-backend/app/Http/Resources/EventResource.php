@@ -8,14 +8,6 @@ class EventResource extends JsonResource
 {
     public function toArray($request)
     {
-        // Add debug info to track what's being loaded
-        \Log::debug('Building EventResource', [
-            'event_id' => $this->id,
-            'venue_loaded' => $this->relationLoaded('venue'),
-            'author_loaded' => $this->relationLoaded('author'),
-            'manager_loaded' => $this->relationLoaded('manager'),
-            'seats_loaded' => $this->relationLoaded('seats'),
-        ]);
         
         return [
             'id'                => $this->id,
@@ -26,7 +18,7 @@ class EventResource extends JsonResource
             'tickets_capacity'  => $this->tickets_capacity,
             'tickets_reserved'  => $this->tickets_reserved,
             'image_url'         => $this->image_url,
-            // Always include these relationships, even if not loaded
+            // Ukljuciti i veze
             'venue'             => $this->whenLoaded('venue', function() {
                 return new VenueResource($this->venue);
             }),

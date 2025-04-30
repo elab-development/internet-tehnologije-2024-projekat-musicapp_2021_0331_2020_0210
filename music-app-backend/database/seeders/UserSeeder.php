@@ -11,7 +11,7 @@ class UserSeeder extends Seeder
 {
     public function run()
     {
-        // 1 admin with fixed credentials
+        // 1 administrator sa fiksnim kredencijalima
         User::factory()->create([
             'name'            => 'Administrator',
             'email'           => 'administrator123@gmail.com',
@@ -23,13 +23,13 @@ class UserSeeder extends Seeder
             'remember_token'  => Str::random(10),
         ]);
 
-        // 2 event managers
+        // 2 menadzera dogadjaja
         User::factory()
             ->count(2)
             ->state(['role' => 'event_manager'])
             ->create();
 
-        // 5 buyers
+        // 5 kupaca
         User::factory()
             ->count(5)
             ->state(['role' => 'buyer'])

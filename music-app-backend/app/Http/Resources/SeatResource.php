@@ -10,7 +10,7 @@ class SeatResource extends JsonResource
     {
         $isReserved = $this->is_reserved;
         
-        // If the reservations relationship is loaded, use it to determine if the seat is reserved
+        // Ako je veza sa rezervacijama ucitana , isReserved cemo onda da ucitamo i bice true ili false
         if ($this->relationLoaded('reservations')) {
             $isReserved = $this->reservations->isNotEmpty();
         }
