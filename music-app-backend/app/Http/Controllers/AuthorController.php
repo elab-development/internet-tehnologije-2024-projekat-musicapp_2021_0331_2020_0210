@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\AuthorResource;
 use App\Models\Author;
+use Illuminate\Support\Facades\Log;
 
 class AuthorController extends Controller
 {
@@ -14,7 +15,12 @@ class AuthorController extends Controller
      */
     public function index()
     {
-        return AuthorResource::collection(Author::all());
+        $authors = Author::all();
+        
+        // Add debugging
+        Log::info('Authors retrieved', ['count' => $authors->count()]);
+        
+        return AuthorResource::collection($authors);
     }
 
     /**

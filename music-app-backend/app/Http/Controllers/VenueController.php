@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\VenueResource;
 use App\Models\Venue;
+use Illuminate\Support\Facades\Log;
 
 class VenueController extends Controller
 {
@@ -14,7 +15,12 @@ class VenueController extends Controller
      */
     public function index()
     {
-        return VenueResource::collection(Venue::all());
+        $venues = Venue::all();
+        
+        // Add debugging
+        Log::info('Venues retrieved', ['count' => $venues->count()]);
+        
+        return VenueResource::collection($venues);
     }
 
     /**
