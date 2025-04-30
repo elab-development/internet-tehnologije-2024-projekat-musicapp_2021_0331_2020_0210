@@ -1,84 +1,102 @@
+// src/components/Users.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Particles from './Particles';
 import Breadcrumbs from './Breadcrumbs';
+import fetchJsonp from '../utils/fetchJsonpHelper';
 
-// slika zaglavlja iz public/images/users.png
 const HEADING_SRC = '/images/users.png';
 
-export default function Users() {
-  // hook za navigaciju između ruta
-  const navigate = useNavigate();
-  // stanja komponente
-  const [users, setUsers]           = useState([]);    // lista korisnika
-  const [loading, setLoading]       = useState(true);  // indikator učitavanja
-  const [error, setError]           = useState('');    // poruka o grešci
+function usePopularMusicians() {
+  const [artists, setArtists] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState('');
 
-  // efekat koji pri mount-u učitava korisnike
+  useEffect(() => {
+    const callback = 'dzcb_' + Math.random().toString(36).slice(2);
+    const url = 'https://api.deezer.com/chart/0/artists?limit=5';
+    fetchJsonp(url, callback)
+      .then((resp) => {
+        setArtists(resp.data || []);                    // postavi listu umetnika
+      })
+      .catch((e) => {
+        console.error('Deezer JSONP error', e);
+        setError('Could not load popular artists.');    // obradi grešku pri učitavanju
+      })
+      .finally(() => setLoading(false));               // isključi indikator učitavanja
+  }, []);
+
+  return { artists, loading, error };
+}
+
+export default function Users() {
+  const navigate = useNavigate();
+  const [users, setUsers]     = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState('');
+
+  const {
+    artists: popularArtists,
+    loading: loadingArtists,
+    error:   errorArtists
+  } = usePopularMusicians();                           // hook za popularne umetnike
+
   useEffect(() => {
     const fetchUsers = async () => {
-      setLoading(true);    // prikaz loader-a
-      setError('');        // reset poruke o grešci
-
+      setLoading(true);                                // prikaži loader
+      setError('');                                    // resetuj poruku o grešci
       try {
         const token = sessionStorage.getItem('auth_token');
-        // ako nema tokena, preusmeri na login
-        if (!token) {
-          navigate('/auth');
+        if (!token) {                                  // ako nema tokena
+          navigate('/auth');                           // preusmeri na login
           return;
         }
 
-        // proveravamo da li je uloga administrator
         const currentUser = JSON.parse(sessionStorage.getItem('auth_user') || 'null');
-        if (currentUser?.role !== 'administrator') {
-          navigate('/home');
+        if (currentUser?.role !== 'administrator') {  // ako nije admin
+          navigate('/home');                           // preusmeri na home
           return;
         }
 
-        // GET zahtev za listu buyer korisnika
         const { data } = await axios.get(
           'http://127.0.0.1:8000/api/buyers',
           { headers: { Authorization: `Bearer ${token}` } }
         );
-
-        // postavljamo povratne podatke u state
-        setUsers(data.data || data);
+        setUsers(data.data || data);                   // postavi listu korisnika
       } catch (err) {
         console.error('Error fetching users:', err);
-        setError('Could not load users. Please try again later.');
+        setError('Could not load users. Please try again later.');  // obradi grešku
       } finally {
-        setLoading(false);  // isključujemo loader
+        setLoading(false);                             // isključi loader
       }
     };
 
     fetchUsers();
   }, [navigate]);
 
-  // prikaz loader-a sa posebnom animacijom i porukom
   if (loading) {
     return (
       <div className="page-container loading-container">
         <Particles
-          particleColors={['#e3f2fd', '#bbdefb', '#90caf9']}
+          particleColors={['#e3f2fd','#bbdefb','#90caf9']}
           particleCount={150}
           particleSpread={8}
           speed={0.1}
         />
         <div className="loading-content">
           <div className="loader"></div>
-          <p>Loading users data...</p>
+          <p>Loading users data…</p>
         </div>
       </div>
     );
   }
 
-  // prikaz ekrana za grešku sa retry opcijom
   if (error) {
     return (
       <div className="page-container error-container">
         <Particles
-          particleColors={['#f5c6cb', '#f8d7da', '#f5c6cb']}
+          particleColors={['#f5c6cb','#f8d7da','#f5c6cb']}
           particleCount={150}
           particleSpread={8}
           speed={0.1}
@@ -95,27 +113,22 @@ export default function Users() {
     );
   }
 
-  // glavni prikaz stranice sa tabelom korisnika ili praznim stanjem
   return (
     <div className="page-container users-page">
-      {/* pozadinska čestica animacija */}
       <Particles
-        particleColors={['#e3f2fd', '#bbdefb', '#90caf9']}
+        particleColors={['#e3f2fd','#bbdefb','#90caf9']}
         particleCount={150}
         particleSpread={8}
         speed={0.1}
       />
 
       <div className="content-wrapper">
-        {/* zaglavlje sa malom slikom */}
         <header className="page-header users-header">
           <img src={HEADING_SRC} alt="Users" className="header-image-small" />
         </header>
-        
-        {/* breadcrumbs navigacija */}
+
         <Breadcrumbs />
 
-        {/* sadržaj tabele ili prazno stanje */}
         <div className="users-content">
           {users.length === 0 ? (
             <div className="empty-state">
@@ -139,9 +152,7 @@ export default function Users() {
                   <tbody>
                     {users.map(user => (
                       <tr key={user.id}>
-                        {/* ID korisnika */}
                         <td>{user.id}</td>
-                        {/* ime i avatar iz inicijala */}
                         <td>
                           <div className="user-name-cell">
                             <span className="user-avatar-small">
@@ -150,20 +161,15 @@ export default function Users() {
                             <span>{user.name}</span>
                           </div>
                         </td>
-                        {/* email */}
                         <td>{user.email}</td>
-                        {/* uloga sa badgom */}
                         <td>
                           <span className={`role-badge role-${user.role}`}>
                             {user.role}
                           </span>
                         </td>
-                        {/* datum registracije */}
                         <td>
-                          {new Date(user.created_at).toLocaleDateString(undefined, {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
+                          {new Date(user.created_at).toLocaleDateString(undefined,{
+                            year: 'numeric', month: 'short', day: 'numeric'
                           })}
                         </td>
                       </tr>
@@ -174,6 +180,42 @@ export default function Users() {
             </div>
           )}
         </div>
+
+        {/* Popular Artists Section */}
+        <section className="popular-artists">
+          <h2>Top 5 Popular Artists</h2>
+          {loadingArtists ? (
+            <p>Loading popular artists…</p>
+          ) : errorArtists ? (
+            <p className="error-text">{errorArtists}</p>
+          ) : (
+            <div className="table-responsive">
+              <table className="data-table artists-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Artist</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {popularArtists.map((a, i) => (
+                    <tr key={a.id}>
+                      <td>{i + 1}</td>
+                      <td className="artist-name-cell">
+                        <img
+                          src={a.picture_small}
+                          alt={a.name}
+                          className="artist-avatar"
+                        />
+                        {a.name}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );
