@@ -14,6 +14,9 @@ import Footer   from './components/Footer';
 import Events   from './components/Events';
 import Event from './components/EventDetails';
 import MyReservations from './components/MyReservations';
+import MyEvents from './components/MyEvents';
+import ReservationsForMyEvents from './components/ReservationsForMyEvents';
+import Users from './components/Users';
 import './App.css';
 
 function App() {
@@ -30,6 +33,9 @@ function AppWithLoading() {
 
   // Compute login state each render
   const isLoggedIn = Boolean(sessionStorage.getItem('auth_token'));
+  const user = JSON.parse(sessionStorage.getItem('auth_user') || 'null');
+  const isEventManager = user?.role === 'event_manager';
+  const isAdministrator = user?.role === 'administrator';
 
   // Show loading overlay on every route change
   useEffect(() => {
@@ -72,6 +78,34 @@ function AppWithLoading() {
           element={
             isLoggedIn
               ? <MyReservations />
+              : <Navigate to="/auth" replace />
+          }
+        />
+        
+        {/* Administrator Routes */}
+        <Route 
+          path="/users" 
+          element={
+            isLoggedIn && isAdministrator
+              ? <Users />
+              : <Navigate to="/auth" replace />
+          }
+        />
+        
+        {/* Event Manager Routes */}
+        <Route 
+          path="/my-events" 
+          element={
+            isLoggedIn && isEventManager
+              ? <MyEvents />
+              : <Navigate to="/auth" replace />
+          }
+        />
+        <Route 
+          path="/reservations-for-my-events" 
+          element={
+            isLoggedIn && isEventManager
+              ? <ReservationsForMyEvents />
               : <Navigate to="/auth" replace />
           }
         />
