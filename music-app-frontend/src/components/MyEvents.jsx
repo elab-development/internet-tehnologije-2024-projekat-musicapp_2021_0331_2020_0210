@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Particles from './Particles';
+import Breadcrumbs from './Breadcrumbs';
 
 // heading image
 const HEADING_SRC = '/images/my-events.png';
@@ -543,6 +544,8 @@ export default function MyEvents() {
       <header className="events-header">
         <img src={HEADING_SRC} alt="My Events" />
       </header>
+
+      <Breadcrumbs />
 
       <div className="events-controls">
         <button 

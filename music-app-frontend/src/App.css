@@ -2398,3 +2398,36 @@ select:focus {
     padding: 8px;
   }
 }
+
+/* Breadcrumbs */
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #ccc;
+}
+
+.breadcrumb-item {
+  color: #42a5f5;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.breadcrumb-item:hover {
+  color: #64b5f6;
+  text-decoration: underline;
+}
+
+.breadcrumb-item.current {
+  color: #323131;
+  font-weight: 500;
+}
+
+.breadcrumb-separator {
+  margin: 0 8px;
+  color: #323232;
+}

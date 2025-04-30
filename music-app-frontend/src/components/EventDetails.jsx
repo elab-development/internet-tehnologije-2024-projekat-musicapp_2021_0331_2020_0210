@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Particles from './Particles';
+import Breadcrumbs from './Breadcrumbs';
 
 export default function EventDetails() {
   const { id } = useParams();
@@ -229,6 +230,8 @@ export default function EventDetails() {
         <div className="event-details-header">
           <img src="/images/event.png" alt="Event" className="event-details-header-img" />
         </div>
+
+        <Breadcrumbs />
 
         {/* Main Grid Layout */}
         <div className="event-details-grid">

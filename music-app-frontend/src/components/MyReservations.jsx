@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Particles from './Particles';
+import Breadcrumbs from './Breadcrumbs';
 
 // heading image in public/images/my-reservations.png
 const HEADING_SRC = '/images/my-reservations.png';
@@ -70,6 +71,8 @@ export default function MyReservations() {
       <header className="reservations-header">
         <img src={HEADING_SRC} alt="My Reservations" />
       </header>
+
+      <Breadcrumbs />
 
       {reservations.length === 0 ? (
         <div className="no-reservations">

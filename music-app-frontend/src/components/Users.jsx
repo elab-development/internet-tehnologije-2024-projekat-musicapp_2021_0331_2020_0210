@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Particles from './Particles';
+import Breadcrumbs from './Breadcrumbs';
 
 // heading image
 const HEADING_SRC = '/images/users.png';
@@ -98,6 +99,8 @@ export default function Users() {
         <header className="page-header users-header">
           <img src={HEADING_SRC} alt="Users" className="header-image-small" />
         </header>
+        
+        <Breadcrumbs />
 
         <div className="users-content">
           {users.length === 0 ? (

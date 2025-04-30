@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Particles from './Particles';
 import Card from './Card';
+import Breadcrumbs from './Breadcrumbs';
 
 // heading image in public/images/events.png
 const HEADING_SRC = '/images/events.png';
@@ -108,6 +109,8 @@ export default function Events() {
       <header className="events-header">
         <img src={HEADING_SRC} alt="Events" />
       </header>
+
+      <Breadcrumbs />
 
       <div className="events-controls">
         <input
