@@ -31,7 +31,6 @@ export default function MyReservations() {
         
         // assume payload is array under data
         setReservations(data.data || data);
-        console.log('Fetched reservations:', data.data || data);
       } catch (err) {
         console.error('Error fetching reservations:', err);
         setError('Could not load reservations. Please try again later.');

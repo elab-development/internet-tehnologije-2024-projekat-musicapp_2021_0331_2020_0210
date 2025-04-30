@@ -17,7 +17,6 @@ export default function EventDetails() {
   const [error, setError] = useState(null);
 
   const fetchEventData = useCallback(() => {
-    console.log('Fetching event with ID:', id);
     setLoading(true);
     setError('');
     
@@ -26,10 +25,8 @@ export default function EventDetails() {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(res => {
-        console.log('Event API response:', res.data);
         // Extract event data from the nested 'data' property
         const eventData = res.data.data || res.data;
-        console.log('Extracted event data:', eventData);
         
         setEvent(eventData);
         // fallback to empty array if seats is undefined
@@ -42,14 +39,6 @@ export default function EventDetails() {
         }));
         
         setSeats(processedSeats);
-        
-        // Log exact structure for debugging
-        console.log('📌 Event data structure:', JSON.stringify(eventData, null, 2));
-        console.log('📌 Venue data:', eventData.venue);
-        console.log('📌 Author data:', eventData.author);
-        console.log('📌 Manager data:', eventData.manager);
-        console.log('📌 Seats data:', processedSeats);
-        console.log('📌 Reserved seats:', processedSeats.filter(seat => seat.is_reserved).length);
       })
       .catch(err => {
         console.error('Error fetching event data:', err);
@@ -73,11 +62,6 @@ export default function EventDetails() {
   if (!event) {
     return <div className="event-details-loading">Event not found.</div>;
   }
-
-  console.log('Current event state:', event);
-  console.log('Event venue:', event.venue);
-  console.log('Event author:', event.author);
-  console.log('Event manager:', event.manager);
 
   // Organize seats by rows and columns
   // Seats are named like S, S1, S2, S3 in first row, S20, S21, etc. in second row
@@ -153,7 +137,6 @@ export default function EventDetails() {
   
   const toggleSeat = (seatId, isReserved) => {
     if (isReserved) {
-      console.log(`Seat ${seatId} is already reserved, cannot select`);
       return;
     }
     
@@ -167,7 +150,6 @@ export default function EventDetails() {
   const makeReservation = () => {
     if (!selected.length) return;
     setReserving(true);
-    console.log('Making reservation for seats:', selected);
     axios
       .post(
         'http://127.0.0.1:8000/api/reservations',
@@ -178,7 +160,6 @@ export default function EventDetails() {
         { headers: { Authorization: `Bearer ${token}` } }
       )
       .then(response => {
-        console.log('Reservation successful:', response.data);
         
         // Update event in state to reflect new reservation count
         if (event) {

@@ -322,16 +322,6 @@ export default function MyEvents() {
   const [authors, setAuthors] = useState([]);
   const [fetchingOptions, setFetchingOptions] = useState(false);
 
-  // Debug effect to monitor venues and authors
-  useEffect(() => {
-    if (venues.length > 0) {
-      console.log('Venues updated:', venues);
-    }
-    if (authors.length > 0) {
-      console.log('Authors updated:', authors);
-    }
-  }, [venues, authors]);
-
   const fetchEvents = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -389,7 +379,6 @@ export default function MyEvents() {
       }
       
       setVenues(venuesData);
-      console.log('Loaded venues:', venuesData.length);
       
       // Fetch authors/artists
       const authorsResponse = await axios.get(
@@ -408,7 +397,6 @@ export default function MyEvents() {
       }
       
       setAuthors(authorsData);
-      console.log('Loaded authors:', authorsData.length);
       
     } catch (err) {
       console.error('Error fetching options for modal:', err);
