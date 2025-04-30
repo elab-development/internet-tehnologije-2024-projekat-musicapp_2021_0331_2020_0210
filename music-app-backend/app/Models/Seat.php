@@ -13,6 +13,7 @@ class Seat extends Model
     protected $fillable = [
         'position',
         'event_id',
+        'is_reserved',
     ];
 
     /**

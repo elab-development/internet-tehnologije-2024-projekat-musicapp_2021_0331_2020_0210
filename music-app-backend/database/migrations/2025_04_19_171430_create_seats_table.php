@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('seats', function (Blueprint $table) {
             $table->id();
-            $table->integer('number_of_seats');
             $table->string('position', 100);
             $table->unsignedBigInteger('event_id');
+            $table->boolean('is_reserved')->default(false);
             $table->timestamps();
         });
     }
