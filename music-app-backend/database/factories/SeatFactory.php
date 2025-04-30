@@ -28,10 +28,9 @@ class SeatFactory extends Factory
         $number = $this->faker->numberBetween(1, 30);
 
         return [
-            'number_of_seats' => 1,
             'position'        => $row . $number,
-            // If no event_id is provided via state, create a new Event
             'event_id'        => Event::factory(),
+            'is_reserved'     => false,
         ];
     }
 }

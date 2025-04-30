@@ -12,33 +12,45 @@ class SeatSeeder extends Seeder
 {
     public function run()
     {
-        // Rows A–K, seats 1–30
-        $rows    = range('A', 'K');
-        $numbers = range(1, 30);
-
         foreach (Event::all() as $event) {
-            // Build every possible position code
-            $allPositions = [];
-            foreach ($rows as $row) {
-                foreach ($numbers as $num) {
-                    $allPositions[] = $row . $num;
+            // Define how many seats we need
+            $seatsNeeded = $event->tickets_capacity;
+            
+            // Define how many seats per row (19 seats per row in the first row like in the image)
+            $seatsPerRow = 19;
+            
+            // Calculate how many complete rows we need
+            $completeRows = floor($seatsNeeded / $seatsPerRow);
+            
+            // Calculate how many seats in the last row
+            $remainingSeats = $seatsNeeded % $seatsPerRow;
+            
+            // Prepare the states for all seats
+            $states = [];
+            $seatCount = 1;
+            
+            // Create complete rows
+            for ($row = 0; $row < $completeRows; $row++) {
+                for ($seat = 0; $seat < $seatsPerRow; $seat++) {
+                    $states[] = [
+                        'event_id'    => $event->id,
+                        'position'    => "S{$seatCount}",
+                        'is_reserved' => false,
+                    ];
+                    $seatCount++;
                 }
             }
-
-            // Shuffle and pick exactly the number of seats matching tickets_capacity
-            shuffle($allPositions);
-            $seatsNeeded = min($event->tickets_capacity, count($allPositions));
-            $selected = array_slice($allPositions, 0, $seatsNeeded);
-
-            // Prepare a Sequence of state arrays for the factory
-            $states = array_map(function ($pos) use ($event) {
-                return [
-                    'event_id'        => $event->id,
-                    'position'        => $pos,
-                    // 'number_of_seats' will use the factory default (1)
+            
+            // Create the last row if needed
+            for ($seat = 0; $seat < $remainingSeats; $seat++) {
+                $states[] = [
+                    'event_id'    => $event->id,
+                    'position'    => "S{$seatCount}",
+                    'is_reserved' => false,
                 ];
-            }, $selected);
-
+                $seatCount++;
+            }
+            
             // Use the factory with a Sequence to generate seats
             Seat::factory()
                 ->count(count($states))
