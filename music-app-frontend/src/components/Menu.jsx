@@ -7,6 +7,8 @@ export default function Menu() {
   const navigate = useNavigate();
   const token = sessionStorage.getItem('auth_token');
   const user  = JSON.parse(sessionStorage.getItem('auth_user') || 'null');
+  const isEventManager = user?.role === 'event_manager';
+  const isAdministrator = user?.role === 'administrator';
 
   const handleLogout = async () => {
     try {
@@ -27,9 +29,21 @@ export default function Menu() {
     <div className="menu-container">
       {/* LEFT NAV: slides in on hover */}
       <div className="menu-left">
-        <NavLink to="/home"         className="menu-link" style={{marginLeft: '35px'}}>Home</NavLink>
-        <NavLink to="/events"       className="menu-link">Events</NavLink>
-        <NavLink to="/my-reservations" className="menu-link">My Reservations</NavLink>
+        <NavLink to="/home" className="menu-link" style={{marginLeft: '35px'}}>Home</NavLink>
+        
+        {isAdministrator ? (
+          <NavLink to="/users" className="menu-link">Users</NavLink>
+        ) : isEventManager ? (
+          <>
+            <NavLink to="/my-events" className="menu-link">My Events</NavLink>
+            <NavLink to="/reservations-for-my-events" className="menu-link">Reservations</NavLink>
+          </>
+        ) : (
+          <>
+            <NavLink to="/events" className="menu-link">Events</NavLink>
+            <NavLink to="/my-reservations" className="menu-link">My Reservations</NavLink>
+          </>
+        )}
       </div>
 
       {/* CENTER ICON: spins on hover */}

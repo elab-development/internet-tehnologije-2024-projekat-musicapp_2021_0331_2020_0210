@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Particles from './Particles';
@@ -15,9 +15,11 @@ export default function EventDetails() {
   const [reserving, setReserving] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchEventData = () => {
+  const fetchEventData = useCallback(() => {
     console.log('Fetching event with ID:', id);
     setLoading(true);
+    setError('');
+    
     axios
       .get(`http://127.0.0.1:8000/api/events/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -31,26 +33,33 @@ export default function EventDetails() {
         setEvent(eventData);
         // fallback to empty array if seats is undefined
         const eventSeats = Array.isArray(eventData.seats) ? eventData.seats : [];
-        setSeats(eventSeats);
+        
+        // Ensure is_reserved property is properly set for each seat
+        const processedSeats = eventSeats.map(seat => ({
+          ...seat,
+          is_reserved: !!seat.is_reserved, // Convert to boolean if it's not already
+        }));
+        
+        setSeats(processedSeats);
         
         // Log exact structure for debugging
         console.log('📌 Event data structure:', JSON.stringify(eventData, null, 2));
         console.log('📌 Venue data:', eventData.venue);
         console.log('📌 Author data:', eventData.author);
         console.log('📌 Manager data:', eventData.manager);
-        console.log('📌 Seats data:', eventSeats);
-        console.log('📌 Reserved seats:', eventSeats.filter(seat => seat.reserved).length);
+        console.log('📌 Seats data:', processedSeats);
+        console.log('📌 Reserved seats:', processedSeats.filter(seat => seat.is_reserved).length);
       })
       .catch(err => {
         console.error('Error fetching event data:', err);
         setError(err.message || 'Failed to load event details');
       })
       .finally(() => setLoading(false));
-  };
+  }, [id, token]);
 
   useEffect(() => {
     fetchEventData();
-  }, [id, token]);
+  }, [id, token, fetchEventData]);
 
   if (loading) {
     return <div className="event-details-loading">Loading…</div>;
@@ -70,24 +79,56 @@ export default function EventDetails() {
   console.log('Event manager:', event.manager);
 
   // Organize seats by rows and columns
-  // For positions like "A16", parse 'A' as row and '16' as column
+  // Seats are named like S, S1, S2, S3 in first row, S20, S21, etc. in second row
   const groupedSeats = {};
   
   seats.forEach(seat => {
     if (!seat.position) return;
     
     try {
-      // Extract row letter and column number
-      const rowMatch = seat.position.match(/[A-Z]/);
-      const numMatch = seat.position.match(/\d+/);
+      let rowLetter = '';
+      let seatNumber = 0;
       
-      if (!rowMatch || !numMatch) {
-        console.error(`Invalid seat position format: ${seat.position}`);
+      // Special case for seat position 'S' (the first seat)
+      if (seat.position === 'S') {
+        rowLetter = 'Row1';
+        seatNumber = 0;
+      } 
+      // Handle positions like S1, S2, S3, etc.
+      else if (seat.position.startsWith('S')) {
+        const numMatch = seat.position.match(/\d+/);
+        if (!numMatch) {
+          console.error(`Invalid seat position format: ${seat.position}`);
+          return;
+        }
+        
+        const seatNum = parseInt(numMatch[0], 10);
+        
+        // First row: S1 to S18 (S is already handled)
+        if (seatNum >= 1 && seatNum <= 18) {
+          rowLetter = 'Row1';
+          seatNumber = seatNum;
+        }
+        // Second row: S19 to S38
+        else if (seatNum >= 19 && seatNum <= 38) {
+          rowLetter = 'Row2';
+          seatNumber = seatNum - 19;
+        }
+        // Third row: S39 to S57
+        else if (seatNum >= 39 && seatNum <= 57) {
+          rowLetter = 'Row3';
+          seatNumber = seatNum - 39;
+        }
+        // Additional rows as needed
+        else {
+          const rowIndex = Math.floor((seatNum - 1) / 19) + 1;
+          rowLetter = `Row${rowIndex}`;
+          seatNumber = (seatNum - 1) % 19;
+        }
+      } else {
+        console.error(`Unrecognized seat position format: ${seat.position}`);
         return;
       }
-      
-      const rowLetter = rowMatch[0];
-      const colNumber = parseInt(numMatch[0], 10);
       
       // Initialize row if it doesn't exist
       if (!groupedSeats[rowLetter]) {
@@ -95,14 +136,19 @@ export default function EventDetails() {
       }
       
       // Add seat to the row at the column position
-      groupedSeats[rowLetter][colNumber] = seat;
+      groupedSeats[rowLetter][seatNumber] = seat;
     } catch (e) {
       console.error(`Error parsing seat position: ${seat.position}`, e);
     }
   });
   
-  // Get sorted rows and columns for display
-  const sortedRows = Object.keys(groupedSeats).sort();
+  // Get sorted rows for display
+  const sortedRows = Object.keys(groupedSeats).sort((a, b) => {
+    // Extract row numbers and sort numerically
+    const aNum = parseInt(a.replace('Row', ''), 10);
+    const bNum = parseInt(b.replace('Row', ''), 10);
+    return aNum - bNum;
+  });
   
   const toggleSeat = (seatId, isReserved) => {
     if (isReserved) {
@@ -144,7 +190,7 @@ export default function EventDetails() {
           // Mark selected seats as reserved locally
           const updatedSeats = seats.map(seat => {
             if (selected.includes(seat.id)) {
-              return { ...seat, reserved: true };
+              return { ...seat, is_reserved: true };
             }
             return seat;
           });
@@ -290,11 +336,11 @@ export default function EventDetails() {
             <div className="seat-legend">
               <div className="legend-item">
                 <span className="seat-box reserved"></span>
-                <span>reserved ({seats.filter(seat => seat.reserved).length})</span>
+                <span>reserved ({seats.filter(seat => seat.is_reserved).length})</span>
               </div>
               <div className="legend-item">
                 <span className="seat-box free"></span>
-                <span>free ({seats.filter(seat => !seat.reserved).length})</span>
+                <span>free ({seats.filter(seat => !seat.is_reserved).length})</span>
               </div>
               <div className="legend-item">
                 <span className="seat-box selected"></span>
@@ -309,27 +355,34 @@ export default function EventDetails() {
             <div className="theater-container">
               {seats.length > 0 ? (
                 <div className="theater-layout">
-                  {sortedRows.map((rowLetter, rowIndex) => (
-                    <div key={rowLetter} className={`theater-row row-${rowIndex}`}>
-                      <div className="row-label">{rowLetter}</div>
-                      {Object.values(groupedSeats[rowLetter]).map((seat) => {
-                        const seatStatus = seat.reserved 
-                          ? 'reserved' 
-                          : selected.includes(seat.id) 
-                          ? 'selected' 
-                          : 'free';
-                        
-                        return (
-                          <div 
-                            key={seat.id}
-                            className={`theater-seat ${seatStatus}`}
-                            title={`Seat ${seat.position}${seat.reserved ? ' (Reserved)' : ''}`}
-                            onClick={() => toggleSeat(seat.id, seat.reserved)}
-                          >
-                            <span className="seat-label">{seat.position}</span>
-                          </div>
-                        );
-                      })}
+                  {sortedRows.map((rowKey) => (
+                    <div key={rowKey} className={`theater-row ${rowKey}`}>
+                      <div className="row-label">Row {rowKey.replace('Row', '')}</div>
+                      {Object.entries(groupedSeats[rowKey])
+                        .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
+                        .map(([colNum, seat]) => {
+                          // Log to debug any issues with is_reserved
+                          if (typeof seat.is_reserved === 'undefined') {
+                            console.warn(`Seat ${seat.position} (id: ${seat.id}) has undefined is_reserved property`);
+                          }
+                          
+                          const seatStatus = seat.is_reserved 
+                            ? 'reserved' 
+                            : selected.includes(seat.id) 
+                            ? 'selected' 
+                            : 'free';
+                          
+                          return (
+                            <div 
+                              key={seat.id}
+                              className={`theater-seat ${seatStatus}`}
+                              title={`Seat ${seat.position}${seat.is_reserved ? ' (Reserved)' : ''}`}
+                              onClick={() => toggleSeat(seat.id, seat.is_reserved)}
+                            >
+                              <span className="seat-label">{seat.position}</span>
+                            </div>
+                          );
+                        })}
                     </div>
                   ))}
                 </div>
